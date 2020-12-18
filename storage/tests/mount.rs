@@ -1,4 +1,4 @@
-use storage::Storage;
+use storage::{ErrorKind, Storage};
 
 use std::path::Path;
 
@@ -15,7 +15,11 @@ fn mount_non_existing_volume() {
         let mut s = Storage::new();
         let res = s.mount(path_of!("tmp/test.neondb"));
 
-        res.is_err()
+        if let Err(ErrorKind::VolumeNotFound) = res {
+            true
+        } else {
+            false
+        }
     });
 }
 
@@ -25,7 +29,11 @@ fn mount_invalid_ext() {
         let mut s = Storage::new();
         let res = s.mount(path_of!("tmp/invalid.txt"));
 
-        res.is_err()
+        if let Err(ErrorKind::VolumeInvalidExt) = res {
+            true
+        } else {
+            false
+        }
     })
 }
 
@@ -35,6 +43,10 @@ fn mount_invalid_size() {
         let mut s = Storage::new();
         let res = s.mount(path_of!("tmp/invalid.neondb"));
 
-        res.is_err()
+        if let Err(ErrorKind::VolumeInvalidSize) = res {
+            true
+        } else {
+            false
+        }
     });
 }

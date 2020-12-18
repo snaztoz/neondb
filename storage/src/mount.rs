@@ -1,4 +1,4 @@
-use super::{Result, NEONDB_FILE_EXT, NEONDB_FILE_SIZE};
+use super::{ErrorKind, Result, NEONDB_FILE_EXT, NEONDB_FILE_SIZE};
 
 use std::path::Path;
 
@@ -17,30 +17,28 @@ impl MountValidator {
 
     fn is_file_exist(&self, path: &Path) -> Result<()> {
         if !path.exists() {
-            return Err("file not exist".to_string());
+            return Err(ErrorKind::VolumeNotFound);
         }
         Ok(())
     }
 
     fn is_valid_ext(&self, path: &Path) -> Result<()> {
-        let err_msg = format!("the expected extension should be .{}", NEONDB_FILE_EXT);
-
         if let Some(ext) = path.extension() {
             if ext == NEONDB_FILE_EXT {
                 return Ok(());
             }
         }
-        return Err(err_msg);
+        return Err(ErrorKind::VolumeInvalidExt);
     }
 
     fn is_valid_size(&self, path: &Path) -> Result<()> {
         let metadata = match path.metadata() {
             Ok(metadata) => metadata,
-            Err(_) => return Err("failed to retrieve file's metadata".to_string()),
+            Err(_) => return Err(ErrorKind::VolumeInaccessible),
         };
 
         if metadata.len() != NEONDB_FILE_SIZE {
-            return Err("the file doesn't have the expected size".to_string());
+            return Err(ErrorKind::VolumeInvalidSize);
         }
         return Ok(());
     }
