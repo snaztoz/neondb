@@ -12,15 +12,67 @@ mod mount;
 
 type Result<T> = std::result::Result<T, self::error::ErrorKind>;
 
+/// Public API dari package storage.
+///
+/// Package ini hanya menyediakan hal-hal terkait penyimpanan secara
+/// minimalis (low-level). Untuk implementasi detail seperti kepemilikan
+/// dari sebuah block dan sebagainya, dilakukan oleh pengguna sendiri.
+///
+/// # Examples
+///
+/// ```no_run
+/// use storage::Storage;
+/// use std::path::Path;
+///
+/// let mut s = Storage::new();
+/// let path = Path::new("path-ke-volume.neondb");
+///
+/// s.mount(path).unwrap();
+///
+/// let bytes = "sesuatu".as_bytes();
+/// let addr = s.alloc(200).unwrap();
+///
+/// s.write(addr, &bytes).unwrap();       // ok
+/// s.write(addr + 50, &bytes).unwrap();  // ok
+///
+/// s.write(addr + 999, &bytes).unwrap(); // ilegal, error
+/// ```
+///
 pub struct Storage {
     volume: Option<File>,
 }
 
 impl Storage {
+    /// Membuat instance baru dari storage.
+    ///
+    /// Penggunaan sebelum melakukan mounting volume dari penyimpanan
+    /// akan menghasilkan error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use storage::Storage;
+    ///
+    /// let mut s = Storage::new();
+    /// ```
     pub fn new() -> Self {
         Storage { volume: None }
     }
 
+    /// Melakukan mounting (atau memasang) sebuah volume yang menjadi
+    /// media penyimpanan data.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use storage::Storage;
+    /// use std::path::Path;
+    ///
+    /// let mut s = Storage::new();
+    /// let vol = Path::new("path-ke-volume.neondb");
+    ///
+    /// s.mount(vol).unwrap();
+    /// ```
     pub fn mount(&mut self, path: &Path) -> Result<()> {
         MountValidator::validate(path)?;
 
@@ -32,5 +84,188 @@ impl Storage {
         };
 
         Ok(())
+    }
+
+    /// Membuat volume baru dengan nama path yang diberikan, menginisialisasi,
+    /// sekaligus melakukan mounting terhadap volume tersebut.
+    ///
+    /// Method ini akan menghasilkan error jika volume dengan nama path yang
+    /// diberikan sudah ada sebelumnya.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use storage::Storage;
+    /// use std::path::Path;
+    ///
+    /// let mut s = Storage::new();
+    /// let vol = Path::new("vol-yang-belum-ada.neondb");
+    ///
+    /// s.mount_new(vol).unwrap();
+    /// ```
+    pub fn mount_new(&mut self, _path: &Path) -> Result<()> {
+        unimplemented!();
+    }
+
+    /// Melakukan unmounting (atau melepas) volume penyimpanan yang sedang
+    /// digunakan.
+    ///
+    /// Error jika belum ada volume yang di-mounting.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use storage::Storage;
+    /// use std::path::Path;
+    ///
+    /// let mut s = Storage::new();
+    /// let vol = Path::new("path-ke-volume.neondb");
+    ///
+    /// // blah blah blah
+    ///
+    /// s.unmount().unwrap();
+    /// ```
+    pub fn unmount(&mut self) -> Result<()> {
+        unimplemented!();
+    }
+
+    /// Melakukan operasi read pada address tertentu, dan menyimpan
+    /// hasilnya ke dalam buff.
+    ///
+    /// Nilai yang dikembalikan adalah jumlah byte yang berhasil dibaca.
+    /// Namun, terdapat kemungkinan bahwa jumlah bytes yang dibaca tidak
+    /// sama dengan ukuran dari buffer bytes yang diberikan. (Pada kasus
+    /// ini, method akan tetap melakukan pembacaan sebisanya selama tidak
+    /// terjadi pengaksesan terhadap address yang ilegal).
+    ///
+    /// Method ini akan menghasilkan error jika belum ada volume yang
+    /// dimounting, atau operasi pembacaan dilakukan pada address yang
+    /// ilegal (belum dialokasikan).
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use storage::Storage;
+    /// use std::path::Path;
+    ///
+    /// let mut s = Storage::new();
+    /// let vol = Path::new("path-ke-volume.neondb");
+    ///
+    /// s.mount(vol).unwrap();
+    ///
+    /// let mut buff = [0u8; 10];
+    /// let addr = 100;     // asumsikan blok pada alamat ini sudah
+    ///                     // dialokasikan sebelumnya
+    ///
+    /// let res = s.read(addr, &mut buff);
+    ///
+    /// if let Ok(size) = res {
+    ///     // pembacaan sukses
+    /// } else {
+    ///     // error! handle di sini
+    /// }
+    /// ```
+    pub fn read(&mut self, _address: u64, _buff: &mut [u8]) -> Result<usize> {
+        unimplemented!();
+    }
+
+    /// Melakukan operasi write pada address tertentu, dengan menggunakan
+    /// byte-byte yang terdapat pada buff.
+    ///
+    /// Nilai yang dikembalikan adalah jumlah byte yang berhasil ditulis.
+    /// Namun, terdapat kemungkinan bahwa jumlah bytes yang ditulis tidak
+    /// sama dengan ukuran dari buffer bytes yang diberikan. (Pada kasus
+    /// ini, method akan tetap melakukan penulisan sebisanya selama tidak
+    /// terjadi pengaksesan terhadap address yang ilegal).
+    ///
+    /// Method ini akan menghasilkan error jika belum ada volume yang
+    /// dimounting, atau operasi penulisan dilakukan pada address yang
+    /// ilegal (belum dialokasikan).
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use storage::Storage;
+    /// use std::path::Path;
+    ///
+    /// let mut s = Storage::new();
+    /// let vol = Path::new("path-ke-volume.neondb");
+    ///
+    /// s.mount(vol).unwrap();
+    ///
+    /// let buff = [65u8; 10];
+    /// let addr = 100;     // asumsikan blok pada alamat ini sudah
+    ///                     // dialokasikan sebelumnya
+    ///
+    /// let res = s.write(addr, &buff);
+    ///
+    /// if let Ok(size) = res {
+    ///     // penulisan sukses
+    /// } else {
+    ///     // error! handle di sini
+    /// }
+    /// ```
+    pub fn write(&mut self, _address: u64, _buff: &[u8]) -> Result<usize> {
+        unimplemented!();
+    }
+
+    /// Mengalokasikan sebuah blok dengan ukuran yang diberikan.
+    ///
+    /// Nilai yang dikembalikan adalah alamat dari blok yang baru
+    /// dialokasikan.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use storage::Storage;
+    /// use std::path::Path;
+    ///
+    /// let mut s = Storage::new();
+    /// let vol = Path::new("path-ke-volume.neondb");
+    ///
+    /// s.mount(vol).unwrap();
+    ///
+    /// let res = s.alloc(100);     // alokasi 100 bytes
+    ///
+    /// if let Ok(addr) = res {
+    ///    // alokasi berhasil, lakukan sesuatu terhadap addr
+    /// } else {
+    ///    // alokasi gagal
+    /// }
+    /// ```
+    pub fn alloc(&mut self, _size: usize) -> Result<u64> {
+        unimplemented!()
+    }
+
+    /// Men-dealokasi-kan sebuah blok yang terletak pada alamat
+    /// yang diberikan.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use storage::Storage;
+    /// use std::path::Path;
+    ///
+    /// let mut s = Storage::new();
+    /// let vol = Path::new("path-ke-volume.neondb");
+    ///
+    /// s.mount(vol).unwrap();
+    ///
+    /// // blah blah blah
+    ///
+    /// let res = s.dealloc(60);    // dealokasi blok pada alamat 60
+    ///
+    /// if let Err(err) = res {
+    ///     // handle error di sini
+    /// }
+    /// ```
+    pub fn dealloc(&mut self, _address: u64) -> Result<()> {
+        unimplemented!();
+    }
+
+    /// Mendapatkan informasi terkait blok-blok yang ada di dalam
+    /// volume yang sedang dimounting.
+    pub fn blocks(&self) -> Result<()> {
+        unimplemented!();
     }
 }
