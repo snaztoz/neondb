@@ -13,7 +13,7 @@ macro_rules! path_of {
 fn mount_non_existing_volume() {
     assert!({
         let mut s = Storage::new();
-        let res = s.mount(path_of!("tmp/test.neondb"));
+        let res = s.mount(path_of!("tmp/non_existing.neondb"));
 
         if let Err(ErrorKind::VolumeNotFound) = res {
             true
