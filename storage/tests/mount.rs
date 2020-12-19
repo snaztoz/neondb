@@ -1,13 +1,6 @@
 use storage::{ErrorKind, Storage};
 
-use std::path::Path;
-
-macro_rules! path_of {
-    ($p: expr) => {{
-        let full_path = concat!("../", $p);
-        Path::new(full_path)
-    }};
-}
+mod util;
 
 #[test]
 fn mount_non_existing_volume() {
