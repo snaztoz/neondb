@@ -1,5 +1,7 @@
-use super::{ErrorKind, Result, NEONDB_FILE_EXT, NEONDB_FILE_SIZE};
+use super::{ErrorKind, Result, NEONDB_FILE_EXT, NEONDB_FILE_MARK, NEONDB_FILE_SIZE};
 
+use std::fs::File;
+use std::io::{prelude::*, SeekFrom};
 use std::path::Path;
 
 pub struct MountValidator;
@@ -14,6 +16,7 @@ impl MountValidator {
 
         validator.validate_ext(path)?;
         validator.validate_size(path)?;
+        validator.validate_vol_mark(path)?;
 
         Ok(())
     }
@@ -37,5 +40,18 @@ impl MountValidator {
             return Err(ErrorKind::VolumeInvalidSize);
         }
         return Ok(());
+    }
+
+    fn validate_vol_mark(&self, path: &Path) -> Result<()> {
+        let mut buff = [0u8; NEONDB_FILE_MARK.len()];
+
+        let mut vol = File::open(path).unwrap();
+        vol.seek(SeekFrom::Start(0)).unwrap();
+        vol.read(&mut buff).unwrap();
+
+        if buff != NEONDB_FILE_MARK.as_bytes() {
+            return Err(ErrorKind::VolumeCorrupted);
+        }
+        Ok(())
     }
 }

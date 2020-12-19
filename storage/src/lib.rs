@@ -5,6 +5,7 @@ use std::fs::{File, OpenOptions};
 use std::path::Path;
 
 pub const NEONDB_FILE_EXT: &str = "neondb";
+pub const NEONDB_FILE_MARK: &str = "A NeonDB Volume!";
 pub const NEONDB_FILE_SIZE: u64 = 1 << 23;
 
 mod error;
