@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub enum ErrorKind {
-	VolumeCorrupted,
+    VolumeCorrupted,
     VolumeNotFound,
     VolumeInvalidExt,
     VolumeInvalidSize,

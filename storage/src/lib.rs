@@ -127,7 +127,11 @@ impl Storage {
     /// s.unmount().unwrap();
     /// ```
     pub fn unmount(&mut self) -> Result<()> {
-        unimplemented!();
+        if self.volume.is_none() {
+            return Err(ErrorKind::VolumeNotFound);
+        }
+        self.volume = None;
+        Ok(())
     }
 
     /// Melakukan operasi read pada address tertentu, dan menyimpan
