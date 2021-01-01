@@ -23,8 +23,8 @@ impl Allocator {
         // ?optimize
         //
         // Apakah 10 cukup? Jika operasi pengalokasian blok dapat dilakukan
-        // dengan baik (yakni defragmentasi yang ada diminimalisir), maka
-        // ukuran ini cukup.
+        // dengan baik (yakni fragmentasi yang ada diminimalisir), maka
+        // ukuran ini sudah cukup.
         //
         // Tentu, vector bisa melakukan re-grow. Tapi bukankah lebih baik
         // jika ia tidak perlu melakukan regrow sama sekali?
