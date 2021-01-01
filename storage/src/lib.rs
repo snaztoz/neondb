@@ -1,3 +1,4 @@
+use alloc::Allocator;
 pub use error::ErrorKind;
 use mount::MountValidator;
 
@@ -8,6 +9,12 @@ pub const NEONDB_FILE_EXT: &str = "neondb";
 pub const NEONDB_FILE_MARK: &str = "A NeonDB Volume!";
 pub const NEONDB_FILE_SIZE: u64 = 1 << 23;
 
+// Setiap volume memiliki string NEONDB_FILE_MARK di beberapa byte awal,
+// dimana byte string tersebut tidak boleh diubah-ubah.
+pub const NEONDB_FILE_ALLOCATABLE_START: u64 = NEONDB_FILE_MARK.len() as u64;
+pub const NEONDB_FILE_ALLOCATABLE_SIZE: u64 = NEONDB_FILE_SIZE - NEONDB_FILE_MARK.len() as u64;
+
+mod alloc;
 mod error;
 mod mount;
 
@@ -41,6 +48,7 @@ type Result<T> = std::result::Result<T, self::error::ErrorKind>;
 ///
 pub struct Storage {
     volume: Option<File>,
+    allocator: Allocator,
 }
 
 impl Storage {
@@ -57,7 +65,10 @@ impl Storage {
     /// let mut s = Storage::new();
     /// ```
     pub fn new() -> Self {
-        Storage { volume: None }
+        Storage {
+            volume: None,
+            allocator: Allocator::new(),
+        }
     }
 
     /// Melakukan mounting (atau memasang) sebuah volume yang menjadi
@@ -238,8 +249,11 @@ impl Storage {
     ///    // alokasi gagal
     /// }
     /// ```
-    pub fn alloc(&mut self, _size: usize) -> Result<u64> {
-        unimplemented!()
+    pub fn alloc(&mut self, size: usize) -> Result<u64> {
+        if self.volume.is_none() {
+            return Err(ErrorKind::VolumeNotFound);
+        }
+        self.allocator.alloc(self.volume.as_mut().unwrap(), size)
     }
 
     /// Men-dealokasi-kan sebuah blok yang terletak pada alamat
