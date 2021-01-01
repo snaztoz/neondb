@@ -73,8 +73,8 @@ impl Allocator {
 
     // Mengambil blok kosong dengan ukuran yang diberikan
     fn take_free_block(&mut self, size: u64) -> Result<u64> {
-        let (i, free_block) = self.find_free_block(size)?;
-        let free_block_addr = free_block.address;
+        let i = self.find_free_block_index(size)?;
+        let address = self.free_blocks[i].address;
 
         debug_assert!(size <= self.free_blocks[i].size);
 
@@ -87,11 +87,10 @@ impl Allocator {
             self.free_blocks.remove(i);
         }
 
-        Ok(free_block_addr)
+        Ok(address)
     }
 
-    // Mencari index sebuah blok kosong dari free_blocks
-    fn find_free_block(&self, size: u64) -> Result<(usize, &Block)> {
+    fn find_free_block_index(&self, size: u64) -> Result<usize> {
         // ?optimize
         //
         // Pencarian blok kosong dilakukan secara linear. Hal ini dilakukan
@@ -102,13 +101,10 @@ impl Allocator {
         //
         // Sehingga, algoritma ini sepertinya cukup baik untuk digunakan.
         // (sepertinya)
-        let free_block = self
-            .free_blocks
+        self.free_blocks
             .iter()
-            .enumerate()
-            .find(|(_, b)| b.size >= size);
-
-        free_block.ok_or_else(|| ErrorKind::VolumeNotEnoughSpace)
+            .position(|b| b.size >= size)
+            .ok_or_else(|| ErrorKind::VolumeNotEnoughSpace)
     }
 
     fn mark_block(&mut self, vol: &mut File, index: usize) {
