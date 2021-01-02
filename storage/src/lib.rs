@@ -1,4 +1,4 @@
-use alloc::Allocator;
+use alloc::{simple_allocator::SimpleAllocator, Allocator};
 pub use error::ErrorKind;
 use mount::MountValidator;
 
@@ -48,7 +48,7 @@ type Result<T> = std::result::Result<T, self::error::ErrorKind>;
 ///
 pub struct Storage {
     volume: Option<File>,
-    allocator: Allocator,
+    allocator: Box<dyn Allocator>,
 }
 
 impl Storage {
@@ -64,10 +64,10 @@ impl Storage {
     ///
     /// let mut s = Storage::new();
     /// ```
-    pub fn new() -> Self {
+    pub fn new() -> Storage {
         Storage {
             volume: None,
-            allocator: Allocator::new(),
+            allocator: Box::new(SimpleAllocator::new()),
         }
     }
 
