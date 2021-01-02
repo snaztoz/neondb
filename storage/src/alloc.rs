@@ -46,17 +46,20 @@ impl Allocator {
         let size: u64 = size.try_into().unwrap();
 
         let address = self.take_free_block(BLOCK_META_SIZE + size)?;
-        let new_block_index = self.find_block_index(address);
+        let block_index = self
+            .find_block_index(address)
+            .expect_err("expecting the block is still free");
 
-        self.blocks.insert(new_block_index, Block { address, size });
-        self.mark_block(vol, new_block_index);
+        self.blocks.insert(block_index, Block { address, size });
+        self.mark_block(vol, block_index);
 
         Ok(address)
     }
 
-    // Tidak peduli apakah blok tersebut kosong atau tidak
-    fn find_block_index(&self, address: u64) -> usize {
-        let search_res = self.blocks.binary_search_by(|b| {
+    // Ok jika block sudah direservasi, Err jika belum.
+    // Keduanya berisikan index posisi dari block.
+    fn find_block_index(&self, address: u64) -> std::result::Result<usize, usize> {
+        self.blocks.binary_search_by(|b| {
             if b.address <= address && address < b.address + b.size {
                 Ordering::Equal
             } else if address < b.address {
@@ -64,11 +67,7 @@ impl Allocator {
             } else {
                 Ordering::Less
             }
-        });
-
-        match search_res {
-            Ok(i) | Err(i) => i,
-        }
+        })
     }
 
     // Mengambil blok kosong dengan ukuran yang diberikan
