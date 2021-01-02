@@ -11,11 +11,21 @@ pub struct SimpleAllocator {
     // Vector blocks memegang urutan utama. Yakni, ia terurut berdasarkan
     // alamat. Sedangkan untuk free_blocks terurut berdasarkan ukurannya,
     // sehingga dapat mempermudah pencarian blok kosong.
+    //
+    // Diharapkan berhati-hati dalam penggunaan Block ini agar tidak tertukar
+    // antara alamat/size yang asli dengan yang sudah terabstraksi, dimana yang
+    // akan ditampilkan ke dunia luar adalah yang terabstraksi.
+    //
+    // (dimana yang asli memasukkan BLOCK_META ke dalam perhitungannya, sedangkan
+    // untuk yang sudah diabstraksikan tidak)
     blocks: Vec<Block>,
     free_blocks: Vec<Block>,
 }
 
 impl SimpleAllocator {
+    // BLOCK_META ada di bagian awal dari tiap blok, yang berguna
+    // untuk menyimpan data mengenai blok tersebut.
+    //
     // 8 byte untuk panjang blok, dan
     // 8 byte sisanya untuk alamat blok selanjutnya
     const BLOCK_META_SIZE: u64 = 16;
@@ -45,11 +55,11 @@ impl SimpleAllocator {
 
     // Ok jika block sudah direservasi, Err jika belum.
     // Keduanya berisikan index posisi dari block.
-    fn find_block_index(&self, address: u64) -> std::result::Result<usize, usize> {
+    fn find_block_index(&self, raw_address: u64) -> std::result::Result<usize, usize> {
         self.blocks.binary_search_by(|b| {
-            if b.address <= address && address < b.address + b.size {
+            if b.address <= raw_address && raw_address < b.address + b.size {
                 Ordering::Equal
-            } else if address < b.address {
+            } else if raw_address < b.address {
                 Ordering::Greater
             } else {
                 Ordering::Less
@@ -134,19 +144,39 @@ impl Allocator for SimpleAllocator {
     fn alloc(&mut self, vol: &mut File, size: usize) -> Result<u64> {
         let size: u64 = size.try_into().unwrap();
 
-        let address = self.take_free_block(SimpleAllocator::BLOCK_META_SIZE + size)?;
+        let raw_address = self.take_free_block(SimpleAllocator::BLOCK_META_SIZE + size)?;
         let block_index = self
-            .find_block_index(address)
+            .find_block_index(raw_address)
             .expect_err("expecting the block is still free");
 
-        self.blocks.insert(block_index, Block { address, size });
+        self.blocks.insert(
+            block_index,
+            Block {
+                address: raw_address,
+                size,
+            },
+        );
         self.mark_block(vol, block_index);
 
-        Ok(address)
+        let abstract_address = raw_address + SimpleAllocator::BLOCK_META_SIZE;
+        Ok(abstract_address)
     }
 
     fn dealloc(&mut self, _vol: &mut File, _address: u64) -> Result<()> {
         todo!();
+    }
+
+    fn blocks(&self, _vol: &mut File) -> Vec<Block> {
+        // Data mengenai blok yang disimpan oleh allocator haruslah di-
+        // abstraksikan terlebih dahulu agar user tidak perlu mengetahui
+        // adanya keberadaan dari BLOCK_META.
+        self.blocks
+            .iter()
+            .map(|raw_block| Block {
+                address: raw_block.address + SimpleAllocator::BLOCK_META_SIZE,
+                size: raw_block.size - SimpleAllocator::BLOCK_META_SIZE,
+            })
+            .collect::<Vec<Block>>()
     }
 }
 
