@@ -113,19 +113,25 @@ impl Allocator {
 
         // update meta block sebelumnya
         if index > 0 {
-            let bytes = self.construct_block_meta(index - 1);
-            temp_write(vol, self.blocks[index - 1].address, &bytes);
+            temp_write(
+                vol,
+                self.blocks[index - 1].address,
+                &self.construct_block_meta(index - 1),
+            );
         }
 
-        let bytes = self.construct_block_meta(index);
-        temp_write(vol, self.blocks[index].address, &bytes);
+        temp_write(
+            vol,
+            self.blocks[index].address,
+            &self.construct_block_meta(index),
+        );
     }
 
     fn construct_block_meta(&self, index: usize) -> Vec<u8> {
-        let mut next_block_address = 0; // null address
-        if index < self.blocks.len() - 1 {
-            next_block_address = self.blocks[index + 1].address;
-        }
+        let next_block_address = self.blocks.get(index + 1).map_or(
+            0, // null address
+            |b| b.address,
+        );
 
         self.blocks[index]
             .size
