@@ -107,11 +107,46 @@ impl Allocator {
     }
 
     fn mark_block(&mut self, vol: &mut File, index: usize) {
-        todo!()
+        // ?todo
+        //
+        // Gunakan mekanisme dari operator volume.
+
+        // update meta block sebelumnya
+        if index > 0 {
+            let bytes = self.construct_block_meta(index - 1);
+            temp_write(vol, self.blocks[index - 1].address, &bytes);
+        }
+
+        let bytes = self.construct_block_meta(index);
+        temp_write(vol, self.blocks[index].address, &bytes);
+    }
+
+    fn construct_block_meta(&self, index: usize) -> Vec<u8> {
+        let mut next_block_address = 0; // null address
+        if index < self.blocks.len() - 1 {
+            next_block_address = self.blocks[index + 1].address;
+        }
+
+        self.blocks[index]
+            .size
+            .to_be_bytes()
+            .iter()
+            .chain(&next_block_address.to_be_bytes())
+            .map(|byte| *byte)
+            .collect::<Vec<u8>>()
     }
 }
 
 struct Block {
     address: u64,
     size: u64,
+}
+
+// ?todo
+//
+// Hapus method berikut. Gantikan oleh operator asli dari volume.
+use std::io::{prelude::*, SeekFrom};
+fn temp_write(vol: &mut File, address: u64, bytes: &[u8]) {
+    vol.seek(SeekFrom::Start(address)).expect("seeking address");
+    vol.write(bytes).expect("writing bytes");
 }
