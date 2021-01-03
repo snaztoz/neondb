@@ -1,4 +1,4 @@
-use alloc::{rssalloc::RSSAllocator, Allocator};
+use alloc::{rssalloc::RSSAllocator, Allocator, Block};
 pub use error::ErrorKind;
 use mount::MountValidator;
 
@@ -278,13 +278,38 @@ impl Storage {
     ///     // handle error di sini
     /// }
     /// ```
-    pub fn dealloc(&mut self, _address: u64) -> Result<()> {
-        unimplemented!();
+    pub fn dealloc(&mut self, address: u64) -> Result<()> {
+        if self.volume.is_none() {
+            return Err(ErrorKind::VolumeNotFound);
+        }
+        self.allocator
+            .dealloc(self.volume.as_mut().unwrap(), address)
     }
 
-    /// Mendapatkan informasi terkait blok-blok yang ada di dalam
+    /// Mendapatkan informasi terkait blok-blok yang terdapat di dalam
     /// volume yang sedang dimounting.
-    pub fn blocks(&self) -> Result<()> {
-        unimplemented!();
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use storage::Storage;
+    /// use std::path::Path;
+    ///
+    /// let mut s = Storage::new();
+    /// let vol = Path::new("path-ke-volume.neondb");
+    ///
+    /// s.mount(vol).unwrap();
+    ///
+    /// let res = s.blocks();
+    ///
+    /// if let Ok(blocks) = res {
+    ///     println!("Jumlah block: {}", blocks.len());
+    /// }
+    /// ```
+    pub fn blocks(&mut self) -> Result<Vec<Block>> {
+        if self.volume.is_none() {
+            return Err(ErrorKind::VolumeNotFound);
+        }
+        Ok(self.allocator.blocks(self.volume.as_mut().unwrap()))
     }
 }
