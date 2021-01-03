@@ -145,18 +145,18 @@ impl Allocator for SimpleAllocator {
         let size: u64 = size.try_into().unwrap();
 
         let raw_address = self.take_free_block(SimpleAllocator::BLOCK_META_SIZE + size)?;
-        let block_index = self
+        let index = self
             .find_block_index(raw_address)
             .expect_err("expecting the block is still free");
 
         self.blocks.insert(
-            block_index,
+            index,
             Block {
                 address: raw_address,
                 size,
             },
         );
-        self.mark_block(vol, block_index);
+        self.mark_block(vol, index);
 
         let abstract_address = raw_address + SimpleAllocator::BLOCK_META_SIZE;
         Ok(abstract_address)
