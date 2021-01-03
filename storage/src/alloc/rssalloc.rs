@@ -1,6 +1,5 @@
 use super::*;
 
-use std::cmp::Ordering;
 use std::convert::TryInto;
 
 /// Really-Simple Storage Allocator.
@@ -28,10 +27,26 @@ impl RSSAllocator {
 
         RSSAllocator { blocks }
     }
+
+    fn find_unused_block(&self, size: u64) -> Option<usize> {
+        self.blocks
+            .iter()
+            .enumerate()
+            .filter(|(_, b)| !b.is_used)
+            .min_by_key(|(_, b)| b.size >= size)
+            .and_then(|(i, _)| Some(i))
+    }
 }
 
 impl Allocator for RSSAllocator {
     fn alloc(&mut self, vol: &mut File, size: usize) -> Result<u64> {
+        let size = size.try_into().unwrap();
+
+        let i = match self.find_unused_block(size) {
+            Some(index) => index,
+            None => return Err(ErrorKind::VolumeNotEnoughSpace),
+        };
+
         todo!()
     }
 
