@@ -13,4 +13,4 @@ pub struct Block {
     size: u64,
 }
 
-pub mod simple_allocator;
+pub mod rssalloc;

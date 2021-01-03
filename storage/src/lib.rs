@@ -1,4 +1,4 @@
-use alloc::{simple_allocator::SimpleAllocator, Allocator};
+use alloc::{rssalloc::RSSAllocator, Allocator};
 pub use error::ErrorKind;
 use mount::MountValidator;
 
@@ -67,7 +67,7 @@ impl Storage {
     pub fn new() -> Storage {
         Storage {
             volume: None,
-            allocator: Box::new(SimpleAllocator::new()),
+            allocator: Box::new(RSSAllocator::new()),
         }
     }
 
