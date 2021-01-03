@@ -28,6 +28,19 @@ impl RSSAllocator {
         RSSAllocator { blocks }
     }
 
+    fn mark_block(&mut self, vol: &mut File, index: usize) {
+        let next_block_address = self.blocks.get(index).map_or(
+            0, // null address
+            |b| b.address,
+        );
+
+        temp_write(
+            vol,
+            self.blocks[index].address,
+            &self.blocks[index].construct_meta(next_block_address),
+        );
+    }
+
     fn find_unused_block(&self, size: u64) -> Option<usize> {
         self.blocks
             .iter()
@@ -74,6 +87,12 @@ impl Allocator for RSSAllocator {
             },
         );
 
+        if i > 0 {
+            // update blok sebelumnya
+            self.mark_block(vol, i - 1);
+        }
+        self.mark_block(vol, i);
+
         todo!()
     }
 
@@ -90,6 +109,17 @@ struct RSSBlock {
     address: u64,
     size: u64,
     is_used: bool,
+}
+
+impl RSSBlock {
+    fn construct_meta(&self, next_block_address: u64) -> Vec<u8> {
+        self.size
+            .to_be_bytes()
+            .iter()
+            .chain(&next_block_address.to_be_bytes())
+            .map(|b| *b)
+            .collect::<Vec<u8>>()
+    }
 }
 
 // ?todo
