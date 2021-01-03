@@ -36,6 +36,23 @@ impl RSSAllocator {
             .min_by_key(|(_, b)| b.size >= size)
             .and_then(|(i, _)| Some(i))
     }
+
+    // Hanya mengambil bagian dari blok kosong, tetapi belum dilakukan
+    // reservasi blok baru (jika seandainya memang demikian)
+    fn get_unused_block(&mut self, index: usize, size: u64) -> u64 {
+        debug_assert!(!self.blocks[index].is_used);
+
+        let address = self.blocks[index].address;
+
+        self.blocks[index].size -= size;
+        if self.blocks[index].size == 0 {
+            self.blocks.remove(index + 1);
+        } else {
+            self.blocks[index].address += size;
+        }
+
+        address
+    }
 }
 
 impl Allocator for RSSAllocator {
@@ -46,6 +63,16 @@ impl Allocator for RSSAllocator {
             Some(index) => index,
             None => return Err(ErrorKind::VolumeNotEnoughSpace),
         };
+
+        let address = self.get_unused_block(i, size);
+        self.blocks.insert(
+            i,
+            RSSBlock {
+                address,
+                size,
+                is_used: true,
+            },
+        );
 
         todo!()
     }
