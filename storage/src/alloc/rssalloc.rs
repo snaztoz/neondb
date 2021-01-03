@@ -60,12 +60,40 @@ impl RSSAllocator {
         address
     }
 
+    fn merge_unused_blocks(&mut self, start_index: usize) {
+        debug_assert!(!self.blocks[start_index].is_used);
+        debug_assert!(start_index < self.blocks.len());
+
+        let mut new_size = self.blocks[start_index].size;
+
+        for i in start_index + 1..self.blocks.len() {
+            if self.blocks[start_index + i].is_used {
+                break;
+            }
+
+            let block = self.blocks.remove(start_index + i);
+            new_size += block.size;
+        }
+
+        self.blocks[start_index].size = new_size;
+    }
+
     fn find_block_index(&self, address: u64) -> Result<usize> {
         let i = self.blocks.binary_search_by_key(&address, |b| b.address);
 
         match i {
             Ok(index) => Ok(index),
             _ => Err(ErrorKind::BlockNotFound),
+        }
+    }
+
+    fn free_block(&mut self, index: usize) {
+        self.blocks[index].is_used = false;
+
+        if index > 0 && !self.blocks[index - 1].is_used {
+            self.merge_unused_blocks(index - 1);
+        } else {
+            self.merge_unused_blocks(index);
         }
     }
 }
@@ -103,6 +131,8 @@ impl Allocator for RSSAllocator {
     fn dealloc(&mut self, _vol: &mut File, address: u64) -> Result<()> {
         let abstract_address = address - RSSBlock::BLOCK_META_SIZE;
         let index = self.find_block_index(abstract_address)?;
+
+        self.free_block(index);
 
         todo!()
     }
