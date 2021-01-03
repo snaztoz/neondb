@@ -96,7 +96,15 @@ impl Allocator for RSSAllocator {
     }
 
     fn blocks(&self, _vol: &mut File) -> Vec<Block> {
-        todo!()
+        self.blocks
+            .iter()
+            .filter(|b| b.is_used)
+            .map(|b| Block {
+                // abstraksi
+                address: b.address + RSSBlock::BLOCK_META_SIZE,
+                size: b.size - RSSBlock::BLOCK_META_SIZE,
+            })
+            .collect::<Vec<Block>>()
     }
 }
 
