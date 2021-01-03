@@ -22,6 +22,8 @@ impl RSSAllocator {
     }
 
     fn mark_block(&mut self, vol: &mut File, index: usize) {
+        debug_assert!(self.blocks[index].is_used);
+
         let next_block_address = self.blocks.get(index).map_or(
             0, // null address
             |b| b.address,
@@ -32,6 +34,20 @@ impl RSSAllocator {
             self.blocks[index].address,
             &self.blocks[index].construct_meta(next_block_address),
         );
+    }
+
+    // Menandai block dengan posisi index sebelum index yang diberikan,
+    // dimana block tersebut bukanlah sebuah block kosong.
+    fn mark_previous_block(&mut self, vol: &mut File, index: usize) {
+        let prev_block = self
+            .blocks
+            .iter()
+            .enumerate()
+            .max_by_key(|(i, b)| b.is_used && *i < index);
+
+        if let Some((i, _)) = prev_block {
+            self.mark_block(vol, i);
+        }
     }
 
     fn find_unused_block(&self, size: u64) -> Option<usize> {
@@ -118,23 +134,21 @@ impl Allocator for RSSAllocator {
             },
         );
 
-        if i > 0 {
-            // update blok sebelumnya
-            self.mark_block(vol, i - 1);
-        }
+        self.mark_previous_block(vol, i);
         self.mark_block(vol, i);
 
         let abstract_address = address + RSSBlock::BLOCK_META_SIZE;
         Ok(abstract_address)
     }
 
-    fn dealloc(&mut self, _vol: &mut File, address: u64) -> Result<()> {
-        let abstract_address = address - RSSBlock::BLOCK_META_SIZE;
-        let index = self.find_block_index(abstract_address)?;
+    fn dealloc(&mut self, vol: &mut File, address: u64) -> Result<()> {
+        let real_address = address - RSSBlock::BLOCK_META_SIZE;
+        let index = self.find_block_index(real_address)?;
 
         self.free_block(index);
+        self.mark_previous_block(vol, index);
 
-        todo!()
+        Ok(())
     }
 
     fn blocks(&self, _vol: &mut File) -> Vec<Block> {
