@@ -20,7 +20,13 @@ impl RSSAllocator {
     const BLOCK_META_SIZE: u64 = 16;
 
     pub fn new() -> RSSAllocator {
-        RSSAllocator { blocks: vec![] }
+        let blocks = vec![RSSBlock {
+            address: NEONDB_FILE_ALLOCATABLE_START,
+            size: NEONDB_FILE_ALLOCATABLE_SIZE,
+            is_used: false,
+        }];
+
+        RSSAllocator { blocks }
     }
 }
 
