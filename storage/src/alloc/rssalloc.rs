@@ -63,19 +63,20 @@ impl RSSAllocator {
 
 impl Allocator for RSSAllocator {
     fn alloc(&mut self, vol: &mut File, size: usize) -> Result<u64> {
-        let size = size.try_into().unwrap();
+        let size: u64 = size.try_into().unwrap();
+        let real_size = size + RSSBlock::BLOCK_META_SIZE;
 
-        let i = match self.find_unused_block(size) {
+        let i = match self.find_unused_block(real_size) {
             Some(index) => index,
             None => return Err(ErrorKind::VolumeNotEnoughSpace),
         };
 
-        let address = self.get_unused_block(i, size);
+        let address = self.get_unused_block(i, real_size);
         self.blocks.insert(
             i,
             RSSBlock {
                 address,
-                size,
+                size: real_size,
                 is_used: true,
             },
         );
@@ -86,7 +87,8 @@ impl Allocator for RSSAllocator {
         }
         self.mark_block(vol, i);
 
-        todo!()
+        let abstract_address = address + RSSBlock::BLOCK_META_SIZE;
+        Ok(abstract_address)
     }
 
     fn dealloc(&mut self, _vol: &mut File, address: u64) -> Result<()> {
