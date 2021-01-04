@@ -64,12 +64,14 @@ impl RSSAllocator {
     // reservasi blok baru (jika seandainya memang demikian)
     fn get_unused_block(&mut self, index: usize, size: u64) -> u64 {
         debug_assert!(!self.blocks[index].is_used);
+        debug_assert!(self.blocks[index].size >= size);
 
         let address = self.blocks[index].address;
 
         self.blocks[index].size -= size;
+
         if self.blocks[index].size == 0 {
-            self.blocks.remove(index + 1);
+            self.blocks.remove(index);
         } else {
             self.blocks[index].address += size;
         }
