@@ -8,6 +8,7 @@ use std::convert::TryInto;
 /// data linked-list sebagai inti utamanya.
 pub struct RSSAllocator {
     blocks: Vec<RSSBlock>,
+    is_initialized: bool,
 }
 
 impl RSSAllocator {
@@ -18,7 +19,10 @@ impl RSSAllocator {
             is_used: false,
         }];
 
-        RSSAllocator { blocks }
+        RSSAllocator {
+            blocks,
+            is_initialized: false,
+        }
     }
 
     fn mark_block(&mut self, index: usize, vol: &mut File) {
@@ -160,6 +164,14 @@ impl Allocator for RSSAllocator {
         Ok(())
     }
 
+    fn init(&mut self, vol: &mut File) -> Result<Block> {
+        todo!();
+    }
+
+    fn init_new(&mut self, vol: &mut File) -> Result<()> {
+        todo!();
+    }
+
     fn blocks(&self, _vol: &mut File) -> Vec<Block> {
         self.blocks
             .iter()
@@ -204,4 +216,9 @@ use std::io::{prelude::*, SeekFrom};
 fn temp_write(vol: &mut File, address: u64, bytes: &[u8]) {
     vol.seek(SeekFrom::Start(address)).expect("seeking address");
     vol.write(bytes).expect("writing bytes");
+}
+
+fn temp_read(vol: &mut File, address: u64, buff: &mut [u8]) {
+    vol.seek(SeekFrom::Start(address)).expect("seeking address");
+    vol.read(buff).expect("reading bytes");
 }
