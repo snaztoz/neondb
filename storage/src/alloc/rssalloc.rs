@@ -95,7 +95,7 @@ impl RSSAllocator {
         self.blocks[start_index].size = new_size;
     }
 
-    fn find_used_block_index(&self, address: u64) -> Result<usize> {
+    fn find_used_block_index(&self, address: u64) -> Option<usize> {
         self.blocks
             .binary_search_by_key(&address, |b| b.address)
             .and_then(|i| {
@@ -105,7 +105,7 @@ impl RSSAllocator {
                     Err(i)
                 }
             })
-            .map_err(|_| ErrorKind::BlockNotFound)
+            .ok()
     }
 
     fn free_block(&mut self, index: usize) {
@@ -148,10 +148,13 @@ impl Allocator for RSSAllocator {
 
     fn dealloc(&mut self, vol: &mut File, address: u64) -> Result<()> {
         let real_address = address - RSSBlock::BLOCK_META_SIZE;
-        let index = self.find_used_block_index(real_address)?;
 
-        self.free_block(index);
-        self.mark_block_before(index, vol);
+        let i = self
+            .find_used_block_index(real_address)
+            .ok_or_else(|| ErrorKind::BlockNotFound)?;
+
+        self.free_block(i);
+        self.mark_block_before(i, vol);
 
         Ok(())
     }
