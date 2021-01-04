@@ -124,10 +124,9 @@ impl Allocator for RSSAllocator {
         let size: u64 = size.try_into().unwrap();
         let real_size = size + RSSBlock::BLOCK_META_SIZE;
 
-        let i = match self.find_unused_block_index(real_size) {
-            Some(index) => index,
-            None => return Err(ErrorKind::VolumeNotEnoughSpace),
-        };
+        let i = self
+            .find_unused_block_index(real_size)
+            .ok_or_else(|| ErrorKind::VolumeNotEnoughSpace)?;
 
         let address = self.get_unused_block(i, real_size);
         self.blocks.insert(
