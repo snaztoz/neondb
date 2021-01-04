@@ -95,9 +95,18 @@ impl RSSAllocator {
         self.blocks[start_index].size = new_size;
     }
 
+    // Ok jika blok bukan merupakan blok kosong, dan Err
+    // jika sebaliknya
     fn find_block_index(&self, address: u64) -> Result<usize> {
         self.blocks
             .binary_search_by_key(&address, |b| b.address)
+            .and_then(|i| {
+                if self.blocks[i].is_used {
+                    Ok(i)
+                } else {
+                    Err(i)
+                }
+            })
             .map_err(|_| ErrorKind::BlockNotFound)
     }
 
