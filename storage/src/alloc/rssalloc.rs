@@ -55,8 +55,8 @@ impl RSSAllocator {
         self.blocks
             .iter()
             .enumerate()
-            .filter(|(_, b)| !b.is_used)
-            .min_by_key(|(_, b)| b.size >= size)
+            .filter(|(_, b)| !b.is_used && b.size >= size)
+            .min_by_key(|(_, b)| b.size)
             .and_then(|(i, _)| Some(i))
     }
 
