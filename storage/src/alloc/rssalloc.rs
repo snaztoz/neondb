@@ -51,7 +51,7 @@ impl RSSAllocator {
         }
     }
 
-    fn find_unused_block(&self, size: u64) -> Option<usize> {
+    fn find_unused_block_index(&self, size: u64) -> Option<usize> {
         self.blocks
             .iter()
             .enumerate()
@@ -117,7 +117,7 @@ impl Allocator for RSSAllocator {
         let size: u64 = size.try_into().unwrap();
         let real_size = size + RSSBlock::BLOCK_META_SIZE;
 
-        let i = match self.find_unused_block(real_size) {
+        let i = match self.find_unused_block_index(real_size) {
             Some(index) => index,
             None => return Err(ErrorKind::VolumeNotEnoughSpace),
         };
