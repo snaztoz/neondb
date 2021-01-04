@@ -43,7 +43,8 @@ impl RSSAllocator {
             .blocks
             .iter()
             .enumerate()
-            .max_by_key(|(i, b)| b.is_used && *i < index);
+            .filter(|(i, b)| *i < index && b.is_used)
+            .max_by_key(|(i, _)| *i);
 
         if let Some((i, _)) = prev_block {
             self.mark_block(vol, i);
