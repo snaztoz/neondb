@@ -96,12 +96,9 @@ impl RSSAllocator {
     }
 
     fn find_block_index(&self, address: u64) -> Result<usize> {
-        let i = self.blocks.binary_search_by_key(&address, |b| b.address);
-
-        match i {
-            Ok(index) => Ok(index),
-            _ => Err(ErrorKind::BlockNotFound),
-        }
+        self.blocks
+            .binary_search_by_key(&address, |b| b.address)
+            .map_err(|_| ErrorKind::BlockNotFound)
     }
 
     fn free_block(&mut self, index: usize) {
