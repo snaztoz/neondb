@@ -181,6 +181,7 @@ impl Allocator for RSSAllocator {
 
         init::scan_blocks(vol, start_address, self)?;
 
+        self.is_initialized = true;
         Ok(self.blocks(vol))
     }
 
