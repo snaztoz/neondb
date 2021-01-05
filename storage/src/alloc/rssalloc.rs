@@ -181,7 +181,7 @@ impl Allocator for RSSAllocator {
 
         init::scan_blocks(vol, start_address, self)?;
 
-        todo!();
+        Ok(self.blocks(vol))
     }
 
     fn init_new(&mut self, vol: &mut File) -> Result<()> {
