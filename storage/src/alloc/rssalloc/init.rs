@@ -8,15 +8,14 @@ pub fn obtain_head(vol: &mut File, allocator: &mut RSSAllocator) -> Result<u64> 
     let mut buff = [0u8; 16];
     temp_read(vol, address, &mut buff);
 
-    let size = bytes_to_u64(&buff[..8]);
+    let (size, next_address) = extract_values(&buff[..]);
+
     if size != RSSBlock::BLOCK_META_SIZE {
         return Err(ErrorKind::VolumeCorrupted);
     }
 
     push_block(allocator, address, size);
-
-    let next_block_address = bytes_to_u64(&buff[8..]);
-    Ok(next_block_address)
+    Ok(next_address)
 }
 
 pub fn scan_blocks(vol: &mut File, start_address: u64, allocator: &mut RSSAllocator) -> Result<()> {
@@ -26,7 +25,7 @@ pub fn scan_blocks(vol: &mut File, start_address: u64, allocator: &mut RSSAlloca
     while address != NULL_ADDRESS {
         temp_read(vol, address, &mut buff);
 
-        let (size, next_address) = extract_values(&buff[..8]);
+        let (size, next_address) = extract_values(&buff[..]);
 
         if gap_exist_before(address, allocator)? {
             push_unused_block_before(address, allocator);
