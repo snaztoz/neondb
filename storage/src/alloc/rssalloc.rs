@@ -130,6 +130,10 @@ impl RSSAllocator {
 
 impl Allocator for RSSAllocator {
     fn alloc(&mut self, vol: &mut File, size: usize) -> Result<u64> {
+        if !self.is_initialized {
+            return Err(ErrorKind::AllocatorNotInitialized);
+        }
+
         let size: u64 = size.try_into().unwrap();
         let real_size = size + RSSBlock::BLOCK_META_SIZE;
 
@@ -155,6 +159,10 @@ impl Allocator for RSSAllocator {
     }
 
     fn dealloc(&mut self, vol: &mut File, address: u64) -> Result<()> {
+        if !self.is_initialized {
+            return Err(ErrorKind::AllocatorNotInitialized);
+        }
+
         let real_address = address - RSSBlock::BLOCK_META_SIZE;
 
         let i = self

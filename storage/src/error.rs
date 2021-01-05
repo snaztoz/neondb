@@ -1,5 +1,6 @@
 #[derive(Debug)]
 pub enum ErrorKind {
+    AllocatorNotInitialized,
     BlockNotFound,
     VolumeCorrupted,
     VolumeNotEnoughSpace,
