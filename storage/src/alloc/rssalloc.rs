@@ -179,6 +179,8 @@ impl Allocator for RSSAllocator {
         // disini sudah didapatkan posisi blok selanjutnya
         let start_address = init::obtain_head(vol, self)?;
 
+        init::scan_blocks(vol, start_address, self)?;
+
         todo!();
     }
 
