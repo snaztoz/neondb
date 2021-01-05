@@ -117,8 +117,13 @@ impl Storage {
     ///
     /// s.mount_new(vol).unwrap();
     /// ```
-    pub fn mount_new(&mut self, _path: &Path) -> Result<()> {
-        unimplemented!();
+    pub fn mount_new(&mut self, path: &Path) -> Result<()> {
+        MountValidator::validate_new(path)?;
+
+        mount::new_volume(path)?;
+        self.allocator.init_new(self.volume.as_mut().unwrap())?;
+
+        Ok(())
     }
 
     /// Melakukan unmounting (atau melepas) volume penyimpanan yang sedang

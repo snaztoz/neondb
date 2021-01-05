@@ -2,10 +2,12 @@
 pub enum ErrorKind {
     AllocatorNotInitialized,
     BlockNotFound,
+    VolumeAlreadyExists,
     VolumeCorrupted,
-    VolumeNotEnoughSpace,
-    VolumeNotFound,
+    VolumeInaccessible,
+    VolumeInitFailed,
     VolumeInvalidExt,
     VolumeInvalidSize,
-    VolumeInaccessible,
+    VolumeNotEnoughSpace,
+    VolumeNotFound,
 }

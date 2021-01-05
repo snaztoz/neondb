@@ -1,6 +1,6 @@
 use super::{ErrorKind, Result, NEONDB_FILE_EXT, NEONDB_FILE_MARK, NEONDB_FILE_SIZE};
 
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::{prelude::*, SeekFrom};
 use std::path::Path;
 
@@ -17,6 +17,18 @@ impl MountValidator {
         validator.validate_ext(path)?;
         validator.validate_size(path)?;
         validator.validate_vol_mark(path)?;
+
+        Ok(())
+    }
+
+    pub fn validate_new(path: &Path) -> Result<()> {
+        let validator = MountValidator;
+
+        if path.exists() {
+            return Err(ErrorKind::VolumeAlreadyExists);
+        }
+
+        validator.validate_ext(path)?;
 
         Ok(())
     }
@@ -54,4 +66,19 @@ impl MountValidator {
         }
         Ok(())
     }
+}
+
+pub fn new_volume(path: &Path) -> Result<File> {
+    let mut vol = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(path)
+        .expect("creating new volume");
+
+    vol.set_len(NEONDB_FILE_SIZE)
+        .and_then(|_| vol.seek(SeekFrom::Start(0)))
+        .and_then(|_| vol.write(&NEONDB_FILE_MARK.as_bytes()))
+        .map_err(|_| ErrorKind::VolumeInitFailed)?;
+
+    Ok(vol)
 }
