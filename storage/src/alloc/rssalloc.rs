@@ -1,5 +1,4 @@
 use super::*;
-use init::InitHelper;
 use rssblock::RSSBlock;
 
 use std::convert::TryInto;
