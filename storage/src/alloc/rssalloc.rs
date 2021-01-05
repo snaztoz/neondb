@@ -1,8 +1,10 @@
 use super::*;
+use init::InitHelper;
 use rssblock::RSSBlock;
 
 use std::convert::TryInto;
 
+mod init;
 mod rssblock;
 
 /// Really-Simple Storage Allocator.
