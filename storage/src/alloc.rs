@@ -9,7 +9,7 @@ pub trait Allocator {
 
     // Ketiga method di atas tidak dapat dijalankan jika allocator
     // belum diinisialisasikan terlebih dulu.
-    fn init(&mut self, vol: &mut File) -> Result<Block>;
+    fn init(&mut self, vol: &mut File) -> Result<Vec<Block>>;
     fn init_new(&mut self, vol: &mut File) -> Result<()>;
 }
 
