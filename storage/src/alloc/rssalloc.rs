@@ -168,6 +168,9 @@ impl Allocator for RSSAllocator {
     }
 
     fn init(&mut self, vol: &mut File) -> Result<Block> {
+        // disini sudah didapatkan posisi blok selanjutnya
+        let start_address = init::obtain_head(vol, self)?;
+
         todo!();
     }
 
