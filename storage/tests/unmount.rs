@@ -24,10 +24,6 @@ fn unmount_non_existing_volume() {
 
         let res = s.unmount();
 
-        if let Err(ErrorKind::VolumeNotFound) = res {
-            true
-        } else {
-            false
-        }
+        matches!(res, Err(ErrorKind::VolumeNotFound))
     });
 }

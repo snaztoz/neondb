@@ -28,10 +28,6 @@ fn alloc_exceeding_volume_cap() {
 
         let res = s.alloc(1 << 32);
 
-        if let Err(ErrorKind::VolumeNotEnoughSpace) = res {
-            true
-        } else {
-            false
-        }
+        matches!(res, Err(ErrorKind::VolumeNotEnoughSpace))
     });
 }
