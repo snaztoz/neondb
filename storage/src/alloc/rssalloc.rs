@@ -13,11 +13,10 @@ pub struct RSSAllocator {
 
 impl RSSAllocator {
     pub fn new() -> RSSAllocator {
-        let blocks = vec![RSSBlock {
-            address: NEONDB_FILE_ALLOCATABLE_START,
-            size: NEONDB_FILE_ALLOCATABLE_SIZE,
-            is_used: false,
-        }];
+        // Blok-blok yang ada di dalam volume belum dapat dideteksi,
+        // oleh karenanya perlu dilakukan inisialisasi terlebih dulu
+        // sebelum alokator mulai digunakan.
+        let blocks = vec![];
 
         RSSAllocator {
             blocks,
