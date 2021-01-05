@@ -14,7 +14,7 @@ pub fn obtain_head(vol: &mut File, allocator: &mut RSSAllocator) -> Result<u64> 
         return Err(ErrorKind::VolumeCorrupted);
     }
 
-    push_block(allocator, address, size);
+    push_block(address, size, allocator);
     Ok(next_address)
 }
 
@@ -30,7 +30,7 @@ pub fn scan_blocks(vol: &mut File, start_address: u64, allocator: &mut RSSAlloca
         if gap_exist_before(address, allocator)? {
             push_unused_block_before(address, allocator);
         }
-        push_block(allocator, address, size);
+        push_block(address, size, allocator);
 
         address = next_address;
     }
@@ -40,7 +40,7 @@ pub fn scan_blocks(vol: &mut File, start_address: u64, allocator: &mut RSSAlloca
     Ok(())
 }
 
-fn push_block(allocator: &mut RSSAllocator, address: u64, size: u64) {
+fn push_block(address: u64, size: u64, allocator: &mut RSSAllocator) {
     allocator.blocks.push(RSSBlock {
         address,
         size,
