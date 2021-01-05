@@ -18,6 +18,22 @@ pub fn obtain_head(vol: &mut File, allocator: &mut RSSAllocator) -> Result<u64> 
     Ok(next_address)
 }
 
+pub fn new_volume(vol: &mut File, allocator: &mut RSSAllocator) -> Result<()> {
+    debug_assert!(allocator.blocks.len() == 0);
+
+    // Menambahkan head
+    push_block(
+        NEONDB_FILE_ALLOCATABLE_START,
+        RSSBlock::BLOCK_META_SIZE,
+        allocator,
+    );
+    allocator.mark_block(0, vol);
+
+    push_remaining_space(allocator)?;
+
+    Ok(())
+}
+
 pub fn scan_blocks(vol: &mut File, start_address: u64, allocator: &mut RSSAllocator) -> Result<()> {
     let mut address = start_address;
     let mut buff = [0u8; 16];

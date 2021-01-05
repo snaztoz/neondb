@@ -186,7 +186,10 @@ impl Allocator for RSSAllocator {
     }
 
     fn init_new(&mut self, vol: &mut File) -> Result<()> {
-        todo!();
+        init::new_volume(vol, self)?;
+
+        self.is_initialized = true;
+        Ok(())
     }
 
     fn blocks(&self, _vol: &mut File) -> Vec<Block> {
