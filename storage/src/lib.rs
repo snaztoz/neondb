@@ -149,6 +149,7 @@ impl Storage {
             return Err(ErrorKind::VolumeNotFound);
         }
         self.volume = None;
+        self.allocator.reset();
         Ok(())
     }
 

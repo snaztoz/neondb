@@ -203,6 +203,11 @@ impl Allocator for RSSAllocator {
             })
             .collect::<Vec<Block>>()
     }
+
+    fn reset(&mut self) {
+        self.blocks.clear();
+        self.is_initialized = false;
+    }
 }
 
 // ?todo

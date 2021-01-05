@@ -12,6 +12,7 @@ pub trait Allocator {
     fn init_new(&mut self, vol: &mut File) -> Result<()>;
 
     fn blocks(&self, vol: &mut File) -> Vec<Block>;
+    fn reset(&mut self);
 }
 
 pub struct Block {
