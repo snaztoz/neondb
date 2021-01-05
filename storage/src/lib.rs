@@ -95,6 +95,8 @@ impl Storage {
             Err(_) => panic!("internal error"),
         };
 
+        self.allocator.init(self.volume.as_mut().unwrap())?;
+
         Ok(())
     }
 
