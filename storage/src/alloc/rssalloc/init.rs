@@ -35,12 +35,7 @@ pub fn scan_blocks(vol: &mut File, start_address: u64, allocator: &mut RSSAlloca
         address = next_address;
     }
 
-    // alamat byte terakhir yang dapat ditempati oleh data
-    let last_address = NEONDB_FILE_ALLOCATABLE_SIZE;
-
-    if gap_exist_before(last_address, allocator)? {
-        push_unused_block_before(last_address, allocator);
-    }
+    push_remaining_space(allocator)?;
 
     Ok(())
 }
@@ -62,6 +57,17 @@ fn push_unused_block_before(next_block_address: u64, allocator: &mut RSSAllocato
         size: next_block_address - address,
         is_used: false,
     });
+}
+
+fn push_remaining_space(allocator: &mut RSSAllocator) -> Result<()> {
+    // alamat byte terakhir yang dapat ditempati oleh data
+    let last_address = NEONDB_FILE_ALLOCATABLE_SIZE;
+
+    if gap_exist_before(last_address, allocator)? {
+        push_unused_block_before(last_address, allocator);
+    }
+
+    Ok(())
 }
 
 fn gap_exist_before(next_block_address: u64, allocator: &RSSAllocator) -> Result<bool> {
