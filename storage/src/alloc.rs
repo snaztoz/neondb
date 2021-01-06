@@ -15,6 +15,7 @@ pub trait Allocator {
     fn reset(&mut self);
 }
 
+#[derive(Debug)]
 pub struct Block {
     address: u64,
     size: u64,

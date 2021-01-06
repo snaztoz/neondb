@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct RSSBlock {
     pub address: u64,
     pub size: u64,
