@@ -171,6 +171,8 @@ impl Allocator for RSSAllocator {
     }
 
     fn dealloc(&mut self, vol: &mut File, address: u64) -> Result<()> {
+        debug_assert!(address != NEONDB_FILE_ALLOCATABLE_START);
+
         if !self.is_initialized {
             return Err(ErrorKind::AllocatorNotInitialized);
         }
@@ -207,6 +209,7 @@ impl Allocator for RSSAllocator {
     fn blocks(&self, _vol: &mut File) -> Vec<Block> {
         self.blocks
             .iter()
+            .skip(1) // tidak perlu tampilkan head
             .filter(|b| b.is_used)
             .map(|b| Block {
                 // abstraksi

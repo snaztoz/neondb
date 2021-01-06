@@ -2,7 +2,7 @@ use super::*;
 
 use serial_test::serial;
 
-use crate::{alloc::Block, ErrorKind, Storage};
+use crate::{ErrorKind, Storage};
 
 #[test]
 #[serial]
@@ -89,10 +89,6 @@ fn mount_new_volume() {
         let mut s = Storage::new();
         s.mount(p).unwrap();
 
-        s.blocks().unwrap()
-            == vec![Block {
-                address: 32,
-                size: 0,
-            }]
+        s.blocks().unwrap().is_empty()
     });
 }
