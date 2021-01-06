@@ -8,7 +8,7 @@ use crate::{ErrorKind, Storage};
 #[serial]
 fn mount_valid_volume() {
     assert!({
-        util::create_volume();
+        util::fresh_volume();
 
         let mut s = Storage::new();
         let res = s.mount(path_of!("tmp/test.neondb"));
