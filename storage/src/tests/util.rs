@@ -15,8 +15,8 @@ macro_rules! path_of {
 // ?todo
 //
 // Gantikan fungsi ini
-pub fn fresh_volume() {
-    let mut vol = File::create(path_of!("tmp/test.neondb")).unwrap();
+pub fn fresh_volume(path: &Path) {
+    let mut vol = File::create(path).unwrap();
     vol.set_len(NEONDB_FILE_SIZE).unwrap();
 
     // NEONDB_FILE_MARK + mark dari head-block milik RSSAlloc
