@@ -1,7 +1,5 @@
 use super::*;
 
-const NULL_ADDRESS: u64 = 0;
-
 pub fn obtain_head(vol: &mut File, allocator: &mut RSSAllocator) -> Result<u64> {
     let address = NEONDB_FILE_ALLOCATABLE_START;
     let mut buff = [0u8; 16];

@@ -3,6 +3,8 @@ use rssblock::RSSBlock;
 
 use std::convert::TryInto;
 
+const NULL_ADDRESS: u64 = 0;
+
 mod init;
 mod rssblock;
 
@@ -33,7 +35,7 @@ impl RSSAllocator {
 
         let next_block_address = self
             .find_used_block_address_after(index)
-            .or_else(|| Some(0))
+            .or_else(|| Some(NULL_ADDRESS))
             .unwrap();
 
         temp_write(
