@@ -31,10 +31,10 @@ impl RSSAllocator {
     fn mark_block(&mut self, index: usize, vol: &mut File) {
         debug_assert!(self.blocks[index].is_used);
 
-        let next_block_address = self.blocks.get(index).map_or(
-            0, // null address
-            |b| b.address,
-        );
+        let next_block_address = self
+            .find_used_block_address_after(index)
+            .or_else(|| Some(0))
+            .unwrap();
 
         temp_write(
             vol,
@@ -115,6 +115,16 @@ impl RSSAllocator {
                 }
             })
             .ok()
+    }
+
+    fn find_used_block_address_after(&self, index: usize) -> Option<u64> {
+        debug_assert!(index < self.blocks.len());
+
+        self.blocks
+            .iter()
+            .skip(index + 1)
+            .find(|b| b.is_used)
+            .and_then(|b| Some(b.address))
     }
 
     fn free_block(&mut self, index: usize) {

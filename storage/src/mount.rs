@@ -72,6 +72,7 @@ pub fn new_volume(path: &Path) -> Result<File> {
     let mut vol = OpenOptions::new()
         .read(true)
         .write(true)
+        .create_new(true)
         .open(path)
         .expect("creating new volume");
 

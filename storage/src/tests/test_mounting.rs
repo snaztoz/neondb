@@ -2,7 +2,7 @@ use super::*;
 
 use serial_test::serial;
 
-use crate::{ErrorKind, Storage};
+use crate::{alloc::Block, ErrorKind, Storage};
 
 #[test]
 #[serial]
@@ -68,5 +68,31 @@ fn unmount_non_existing_volume() {
         let res = s.unmount();
 
         matches!(res, Err(ErrorKind::VolumeNotFound))
+    });
+}
+
+#[test]
+#[serial]
+fn mount_new_volume() {
+    let p = path_of!("tmp/storage/mount_new.neondb");
+
+    assert!({
+        let mut s = Storage::new();
+        util::ensure_not_exists(p);
+
+        let res = s.mount_new(p);
+
+        res.is_ok()
+    });
+
+    assert!({
+        let mut s = Storage::new();
+        s.mount(p).unwrap();
+
+        s.blocks().unwrap()
+            == vec![Block {
+                address: 32,
+                size: 0,
+            }]
     });
 }

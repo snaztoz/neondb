@@ -123,7 +123,9 @@ impl Storage {
     pub fn mount_new(&mut self, path: &Path) -> Result<()> {
         MountValidator::validate_new(path)?;
 
-        mount::new_volume(path)?;
+        self.volume = mount::new_volume(path)
+            .map_err(|_| panic!("internal error"))
+            .ok();
         self.allocator.init_new(self.volume.as_mut().unwrap())?;
 
         Ok(())
