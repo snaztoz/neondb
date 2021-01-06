@@ -15,10 +15,10 @@ pub trait Allocator {
     fn reset(&mut self);
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Block {
-    address: u64,
-    size: u64,
+    pub address: u64,
+    pub size: u64,
 }
 
 pub mod rssalloc;
