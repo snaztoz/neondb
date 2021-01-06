@@ -91,12 +91,12 @@ impl Storage {
     pub fn mount(&mut self, path: &Path) -> Result<()> {
         MountValidator::validate(path)?;
 
-        let f = OpenOptions::new().read(true).write(true).open(path);
-
-        self.volume = match f {
-            Ok(f) => Some(f),
-            Err(_) => panic!("internal error"),
-        };
+        self.volume = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(path)
+            .map_err(|_| panic!("internal error"))
+            .ok();
 
         self.allocator.init(self.volume.as_mut().unwrap())?;
 
