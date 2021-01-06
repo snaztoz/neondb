@@ -43,3 +43,33 @@ fn alloc_blocks() {
         true
     });
 }
+
+#[test]
+#[serial]
+fn dealloc_one_block() {
+    assert!({
+        let mut s = init_storage();
+        let mut addresses = vec![];
+        let mut dealloc_address = 0;
+
+        for i in 0..3 {
+            let address = s.alloc(64).unwrap();
+
+            if i == 1 {
+                dealloc_address = address;
+            } else {
+                addresses.push(address);
+            }
+        }
+
+        s.dealloc(dealloc_address).unwrap();
+
+        for (i, b) in s.blocks().unwrap().iter().enumerate() {
+            if b.address != addresses[i] {
+                panic!("wrong address on deallocation");
+            }
+        }
+
+        true
+    });
+}

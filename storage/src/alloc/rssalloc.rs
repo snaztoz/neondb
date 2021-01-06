@@ -95,7 +95,7 @@ impl RSSAllocator {
         let mut new_size = self.blocks[start_index].size;
 
         for i in start_index + 1..self.blocks.len() {
-            if self.blocks[start_index + i].is_used {
+            if self.blocks[i].is_used {
                 break;
             }
 
