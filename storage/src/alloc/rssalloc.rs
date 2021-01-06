@@ -93,13 +93,14 @@ impl RSSAllocator {
         debug_assert!(start_index < self.blocks.len());
 
         let mut new_size = self.blocks[start_index].size;
+        let i = start_index + 1;
 
-        for i in start_index + 1..self.blocks.len() {
-            if self.blocks[i].is_used {
+        loop {
+            if i == self.blocks.len() || self.blocks[i].is_used {
                 break;
             }
 
-            let block = self.blocks.remove(start_index + i);
+            let block = self.blocks.remove(i);
             new_size += block.size;
         }
 

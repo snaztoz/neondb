@@ -73,3 +73,45 @@ fn dealloc_one_block() {
         true
     });
 }
+
+#[test]
+#[serial]
+fn dealloc_blocks() {
+    // Ketika terdapat 2 atau lebih blok kosong yang berjejeran,
+    // maka blok-blok tersebut akan digabungkan menjadi satu.
+    //
+    // Hal ini akan dibuktikan dengan mencoba mengalokasikan
+    // blok yang berukutan (atau hampir) sama dengan jumlah total
+    // dari semua blok kosong tersebut.
+    assert!({
+        let mut s = init_storage();
+        let mut addresses = vec![];
+        let mut dealloc_addresses = vec![];
+
+        for i in 0..5 {
+            let address = s.alloc(64).unwrap();
+
+            if i == 0 || i == 4 {
+                addresses.push(address);
+            } else {
+                dealloc_addresses.push(address);
+            }
+        }
+
+        for address in dealloc_addresses {
+            s.dealloc(address).unwrap();
+        }
+
+        for (i, b) in s.blocks().unwrap().iter().enumerate() {
+            if b.address != addresses[i] {
+                panic!("wrong address on deallocation");
+            }
+        }
+
+        // Mencoba alokasi blok yang cukup besar di antara
+        // kedua blok yang telah ada
+        let address = s.alloc(64 * 3).unwrap();
+
+        s.blocks().unwrap()[1].address == address
+    });
+}
