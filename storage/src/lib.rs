@@ -18,6 +18,9 @@ mod alloc;
 mod error;
 mod mount;
 
+#[cfg(test)]
+mod tests;
+
 type Result<T> = std::result::Result<T, self::error::ErrorKind>;
 
 /// Public API dari package storage.

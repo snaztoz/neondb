@@ -1,4 +1,4 @@
-use storage::{NEONDB_FILE_MARK, NEONDB_FILE_SIZE};
+use crate::{NEONDB_FILE_MARK, NEONDB_FILE_SIZE};
 
 use std::fs::File;
 use std::io::{prelude::*, SeekFrom};

@@ -1,8 +1,8 @@
-use storage::{ErrorKind, Storage};
+use super::*;
 
 use serial_test::serial;
 
-mod util;
+use crate::{ErrorKind, Storage};
 
 #[test]
 #[serial]
@@ -44,5 +44,29 @@ fn mount_invalid_size() {
         let res = s.mount(path_of!("tmp/invalid.neondb"));
 
         matches!(res, Err(ErrorKind::VolumeInvalidSize))
+    });
+}
+
+#[test]
+#[serial]
+fn unmount_volume() {
+    assert!({
+        let mut s = Storage::new();
+        s.mount(path_of!("tmp/test.neondb")).unwrap();
+
+        let res = s.unmount();
+
+        res.is_ok()
+    });
+}
+
+#[test]
+fn unmount_non_existing_volume() {
+    assert!({
+        let mut s = Storage::new();
+
+        let res = s.unmount();
+
+        matches!(res, Err(ErrorKind::VolumeNotFound))
     });
 }
