@@ -1,7 +1,8 @@
 use crate::{NEONDB_FILE_MARK, NEONDB_FILE_SIZE};
 
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::{prelude::*, SeekFrom};
+use std::path::Path;
 
 #[macro_export]
 macro_rules! path_of {
@@ -30,4 +31,10 @@ pub fn fresh_volume() {
     // menandai volume
     vol.seek(SeekFrom::Start(0)).unwrap();
     vol.write(&first_bytes).unwrap();
+}
+
+pub fn ensure_not_exists(path: &Path) {
+    if path.exists() {
+        fs::remove_file(path).expect("fail at removing test file");
+    }
 }
