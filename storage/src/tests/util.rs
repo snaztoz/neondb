@@ -1,6 +1,6 @@
 use crate::{NEONDB_FILE_MARK, NEONDB_FILE_SIZE};
 
-use std::fs::{self, File};
+use std::fs::{self, OpenOptions};
 use std::io::{prelude::*, SeekFrom};
 use std::path::Path;
 
@@ -16,8 +16,16 @@ macro_rules! path_of {
 //
 // Gantikan fungsi ini
 pub fn fresh_volume(path: &Path) {
-    let mut vol = File::create(path).unwrap();
-    vol.set_len(NEONDB_FILE_SIZE).unwrap();
+    let mut vol = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(path)
+        .unwrap();
+
+    if path.metadata().unwrap().len() != NEONDB_FILE_SIZE {
+        vol.set_len(NEONDB_FILE_SIZE).unwrap();
+    }
 
     // NEONDB_FILE_MARK + mark dari head-block milik RSSAlloc
     let first_bytes = NEONDB_FILE_MARK
