@@ -15,9 +15,9 @@ impl Ops {
                 if b.address <= address && address < b.address + b.size {
                     Ordering::Equal
                 } else if address < b.address {
-                    Ordering::Less
-                } else {
                     Ordering::Greater
+                } else {
+                    Ordering::Less
                 }
             })
             .map_err(|_| ErrorKind::BlockNotFound)

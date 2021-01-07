@@ -108,4 +108,21 @@ fn read_truncated() {
         // 1 sebanyak 32 kali, lalu 0 sebanyak 32 kali
         buff[..32] == [1u8; 32] && buff[32..] == [0u8; 32]
     });
+
+    assert!({
+        let mut s = init_storage();
+        let mut buff = [0u8; 64];
+
+        // buat dua blok yang berjejeran, dan kedua blok tersebut
+        // berisikan byte 1
+        let address_one = s.alloc(64).unwrap();
+        let address_two = s.alloc(64).unwrap();
+        write_ones(address_one, 64);
+        write_ones(address_two, 64);
+
+        s.read(address_one + 32, &mut buff).unwrap();
+
+        // 1 sebanyak 32 kali, lalu 0 sebanyak 32 kali
+        buff[..32] == [1u8; 32] && buff[32..] == [0u8; 32]
+    })
 }
