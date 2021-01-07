@@ -1,8 +1,7 @@
 use super::*;
+use crate::{ErrorKind, Storage};
 
 use serial_test::serial;
-
-use crate::{ErrorKind, Storage};
 
 #[test]
 #[serial]
