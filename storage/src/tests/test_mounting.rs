@@ -8,7 +8,7 @@ use crate::{ErrorKind, Storage};
 #[serial]
 fn mount_valid_volume() {
     assert!({
-        let p = path_of!("tmp/test.neondb");
+        let p = path_of!("tmp/storage/test.neondb");
         util::fresh_volume(p);
 
         let mut s = Storage::new();
@@ -22,7 +22,7 @@ fn mount_valid_volume() {
 fn mount_non_existing_volume() {
     assert!({
         let mut s = Storage::new();
-        let res = s.mount(path_of!("tmp/non_existing.neondb"));
+        let res = s.mount(path_of!("tmp/storage/non_existing.neondb"));
 
         matches!(res, Err(ErrorKind::VolumeNotFound))
     });
@@ -32,7 +32,7 @@ fn mount_non_existing_volume() {
 fn mount_invalid_ext() {
     assert!({
         let mut s = Storage::new();
-        let res = s.mount(path_of!("tmp/invalid.txt"));
+        let res = s.mount(path_of!("tmp/storage/invalid.txt"));
 
         matches!(res, Err(ErrorKind::VolumeInvalidExt))
     })
@@ -42,7 +42,7 @@ fn mount_invalid_ext() {
 fn mount_invalid_size() {
     assert!({
         let mut s = Storage::new();
-        let res = s.mount(path_of!("tmp/invalid.neondb"));
+        let res = s.mount(path_of!("tmp/storage/invalid.neondb"));
 
         matches!(res, Err(ErrorKind::VolumeInvalidSize))
     });
@@ -53,7 +53,7 @@ fn mount_invalid_size() {
 fn unmount_volume() {
     assert!({
         let mut s = Storage::new();
-        s.mount(path_of!("tmp/test.neondb")).unwrap();
+        s.mount(path_of!("tmp/storage/test.neondb")).unwrap();
 
         let res = s.unmount();
 
