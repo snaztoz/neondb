@@ -1,7 +1,9 @@
 use alloc::{rssalloc::RSSAllocator, Allocator, Block};
 pub use error::ErrorKind;
 use mount::MountValidator;
+use ops::Ops;
 
+use std::cmp;
 use std::fs::{File, OpenOptions};
 use std::path::Path;
 
@@ -17,6 +19,7 @@ pub const NEONDB_FILE_ALLOCATABLE_SIZE: u64 = NEONDB_FILE_SIZE - NEONDB_FILE_MAR
 mod alloc;
 mod error;
 mod mount;
+mod ops;
 
 #[cfg(test)]
 mod tests;
@@ -204,8 +207,15 @@ impl Storage {
     ///     // error! handle di sini
     /// }
     /// ```
-    pub fn read(&mut self, _address: u64, _buff: &mut [u8]) -> Result<usize> {
-        unimplemented!();
+    pub fn read(&mut self, address: u64, buff: &mut [u8]) -> Result<usize> {
+        let max_len = Ops::max_operation_len_at(address, self.blocks().unwrap())?;
+        let len = cmp::min(max_len, buff.len());
+
+        Ok(Ops::read(
+            address,
+            &mut buff[..len],
+            self.volume.as_mut().unwrap(),
+        ))
     }
 
     /// Melakukan operasi write pada address tertentu, dengan menggunakan
