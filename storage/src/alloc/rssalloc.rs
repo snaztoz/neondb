@@ -48,15 +48,10 @@ impl RSSAllocator {
     // Menandai block dengan posisi index sebelum index yang diberikan,
     // dimana block tersebut bukanlah sebuah block kosong.
     fn mark_block_before(&mut self, index: usize, vol: &mut File) {
-        let prev_block = self
-            .blocks
-            .iter()
-            .enumerate()
-            .filter(|(i, b)| *i < index && b.is_used)
-            .max_by_key(|(i, _)| *i);
+        let prev_block_index = &self.blocks[..index].iter().rposition(|b| b.is_used);
 
-        if let Some((i, _)) = prev_block {
-            self.mark_block(i, vol);
+        if let Some(i) = prev_block_index {
+            self.mark_block(*i, vol);
         }
     }
 
