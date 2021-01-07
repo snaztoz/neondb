@@ -1,5 +1,5 @@
 use super::*;
-use crate::Storage;
+use crate::{alloc::Block, Storage};
 
 use serial_test::serial;
 
@@ -22,7 +22,11 @@ fn startup_with_blocks_exist() {
             s.alloc(64).unwrap();
         }
 
-        s.blocks().unwrap()
+        s.blocks()
+            .unwrap()
+            .iter()
+            .map(|b| Block { ..*b })
+            .collect::<Vec<Block>>()
     }; // drop s terlebih dulu
 
     assert!({
@@ -63,7 +67,11 @@ fn startup_after_dealloc_blocks() {
             s.dealloc(address).unwrap();
         }
 
-        s.blocks().unwrap()
+        s.blocks()
+            .unwrap()
+            .iter()
+            .map(|b| Block { ..*b })
+            .collect::<Vec<Block>>()
     }; // drop s terlebih dulu
 
     assert!({

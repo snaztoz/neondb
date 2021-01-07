@@ -52,6 +52,10 @@ type Result<T> = std::result::Result<T, self::error::ErrorKind>;
 pub struct Storage {
     volume: Option<File>,
     allocator: Box<dyn Allocator>,
+
+    // cache untuk informasi dari blok yang ada di volume
+    blocks_cache: Vec<Block>,
+    need_to_refresh_cache: bool,
 }
 
 impl Storage {
@@ -71,6 +75,8 @@ impl Storage {
         Storage {
             volume: None,
             allocator: Box::new(RSSAllocator::new()),
+            blocks_cache: Vec::new(),
+            need_to_refresh_cache: true,
         }
     }
 
@@ -100,6 +106,7 @@ impl Storage {
 
         self.allocator.init(self.volume.as_mut().unwrap())?;
 
+        self.need_to_refresh_cache = true;
         Ok(())
     }
 
@@ -128,6 +135,7 @@ impl Storage {
             .ok();
         self.allocator.init_new(self.volume.as_mut().unwrap())?;
 
+        self.need_to_refresh_cache = true;
         Ok(())
     }
 
@@ -155,6 +163,8 @@ impl Storage {
         }
         self.volume = None;
         self.allocator.reset();
+
+        self.need_to_refresh_cache = true;
         Ok(())
     }
 
@@ -266,7 +276,12 @@ impl Storage {
         if self.volume.is_none() {
             return Err(ErrorKind::VolumeNotFound);
         }
-        self.allocator.alloc(self.volume.as_mut().unwrap(), size)
+        let res = self.allocator.alloc(self.volume.as_mut().unwrap(), size);
+
+        if res.is_ok() {
+            self.need_to_refresh_cache = true;
+        }
+        res
     }
 
     /// Men-dealokasi-kan sebuah blok yang terletak pada alamat
@@ -295,8 +310,14 @@ impl Storage {
         if self.volume.is_none() {
             return Err(ErrorKind::VolumeNotFound);
         }
-        self.allocator
-            .dealloc(self.volume.as_mut().unwrap(), address)
+        let res = self
+            .allocator
+            .dealloc(self.volume.as_mut().unwrap(), address);
+
+        if res.is_ok() {
+            self.need_to_refresh_cache = true;
+        }
+        res
     }
 
     /// Mendapatkan informasi terkait blok-blok yang terdapat di dalam
@@ -313,16 +334,18 @@ impl Storage {
     ///
     /// s.mount(vol).unwrap();
     ///
-    /// let res = s.blocks();
-    ///
-    /// if let Ok(blocks) = res {
-    ///     println!("Jumlah block: {}", blocks.len());
-    /// }
+    /// let blocks = s.blocks().unwrap();
     /// ```
-    pub fn blocks(&mut self) -> Result<Vec<Block>> {
+    pub fn blocks(&mut self) -> Result<&[Block]> {
         if self.volume.is_none() {
             return Err(ErrorKind::VolumeNotFound);
         }
-        Ok(self.allocator.blocks(self.volume.as_mut().unwrap()))
+
+        if self.need_to_refresh_cache {
+            self.blocks_cache = self.allocator.blocks(self.volume.as_mut().unwrap());
+            self.need_to_refresh_cache = false;
+        }
+
+        Ok(&self.blocks_cache)
     }
 }
