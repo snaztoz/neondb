@@ -76,6 +76,40 @@ fn dealloc_one_block() {
 
 #[test]
 #[serial]
+fn dealloc_last_blocks() {
+    assert!({
+        let mut s = init_storage();
+        let mut dealloc_addresses = vec![];
+
+        for i in 0..5 {
+            let address = s.alloc(64).unwrap();
+            if i == 0 {
+                continue;
+            }
+            dealloc_addresses.push(address);
+        }
+
+        for address in dealloc_addresses {
+            s.dealloc(address).unwrap();
+        }
+
+        if s.blocks().unwrap().len() != 1 {
+            panic!("wrong in deallocation");
+        }
+
+        // alokasi kembali dengan ukuran yang cukup besar
+        let address = s.alloc(64 * 5).unwrap();
+
+        let rssblock_meta_size = 16;
+        let blocks = s.blocks().unwrap();
+
+        // pastikan tidak ada gap
+        blocks[0].address + blocks[0].size + rssblock_meta_size == address
+    });
+}
+
+#[test]
+#[serial]
 fn dealloc_blocks() {
     // Ketika terdapat 2 atau lebih blok kosong yang berjejeran,
     // maka blok-blok tersebut akan digabungkan menjadi satu.
