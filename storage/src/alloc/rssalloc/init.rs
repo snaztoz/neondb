@@ -4,7 +4,7 @@ pub fn obtain_head(vol: &mut File, allocator: &mut RSSAllocator) -> Result<u64> 
     let address = NEONDB_FILE_ALLOCATABLE_START;
     let mut buff = [0u8; 16];
 
-    temp_read(vol, address, &mut buff);
+    Ops::read(address, &mut buff, vol);
 
     let (size, next_address) = extract_values(&buff[..]);
 
@@ -37,7 +37,7 @@ pub fn scan_blocks(vol: &mut File, start_address: u64, allocator: &mut RSSAlloca
     let mut buff = [0u8; 16];
 
     while address != NULL_ADDRESS {
-        temp_read(vol, address, &mut buff);
+        Ops::read(address, &mut buff, vol);
 
         let (size, next_address) = extract_values(&buff[..]);
 

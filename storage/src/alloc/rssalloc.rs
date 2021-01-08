@@ -1,4 +1,5 @@
 use super::*;
+use crate::ops::Ops;
 use rssblock::RSSBlock;
 
 use std::convert::TryInto;
@@ -38,10 +39,10 @@ impl RSSAllocator {
             .or_else(|| Some(NULL_ADDRESS))
             .unwrap();
 
-        temp_write(
-            vol,
+        Ops::write(
             self.blocks[index].address,
             &self.blocks[index].construct_meta(next_block_address),
+            vol,
         );
     }
 
@@ -219,18 +220,4 @@ impl Allocator for RSSAllocator {
         self.blocks.clear();
         self.is_initialized = false;
     }
-}
-
-// ?todo
-//
-// Hapus method berikut. Gantikan oleh operator asli dari volume.
-use std::io::{prelude::*, SeekFrom};
-fn temp_write(vol: &mut File, address: u64, bytes: &[u8]) {
-    vol.seek(SeekFrom::Start(address)).expect("seeking address");
-    vol.write(bytes).expect("writing bytes");
-}
-
-fn temp_read(vol: &mut File, address: u64, buff: &mut [u8]) {
-    vol.seek(SeekFrom::Start(address)).expect("seeking address");
-    vol.read(buff).expect("reading bytes");
 }
