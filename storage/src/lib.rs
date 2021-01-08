@@ -166,8 +166,8 @@ impl Storage {
         }
         self.volume = None;
         self.allocator.reset();
-
         self.need_to_refresh_cache = true;
+
         Ok(())
     }
 
@@ -293,12 +293,13 @@ impl Storage {
         if self.volume.is_none() {
             return Err(ErrorKind::VolumeNotFound);
         }
-        let res = self.allocator.alloc(self.volume.as_mut().unwrap(), size);
 
-        if res.is_ok() {
-            self.need_to_refresh_cache = true;
-        }
-        res
+        self.allocator
+            .alloc(self.volume.as_mut().unwrap(), size)
+            .and_then(|address| {
+                self.need_to_refresh_cache = true;
+                Ok(address)
+            })
     }
 
     /// Men-dealokasi-kan sebuah blok yang terletak pada alamat
@@ -327,14 +328,13 @@ impl Storage {
         if self.volume.is_none() {
             return Err(ErrorKind::VolumeNotFound);
         }
-        let res = self
-            .allocator
-            .dealloc(self.volume.as_mut().unwrap(), address);
 
-        if res.is_ok() {
-            self.need_to_refresh_cache = true;
-        }
-        res
+        self.allocator
+            .dealloc(self.volume.as_mut().unwrap(), address)
+            .and_then(|_| {
+                self.need_to_refresh_cache = true;
+                Ok(())
+            })
     }
 
     /// Mendapatkan informasi terkait blok-blok yang terdapat di dalam
