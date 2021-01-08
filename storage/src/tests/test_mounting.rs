@@ -51,8 +51,11 @@ fn mount_invalid_size() {
 #[serial]
 fn unmount_volume() {
     assert!({
+        let p = path_of!("tmp/storage/test.neondb");
+        util::fresh_volume(p);
+
         let mut s = Storage::new();
-        s.mount(path_of!("tmp/storage/test.neondb")).unwrap();
+        s.mount(p).unwrap();
 
         let res = s.unmount();
 
