@@ -254,8 +254,15 @@ impl Storage {
     ///     // error! handle di sini
     /// }
     /// ```
-    pub fn write(&mut self, _address: u64, _buff: &[u8]) -> Result<usize> {
-        unimplemented!();
+    pub fn write(&mut self, address: u64, buff: &[u8]) -> Result<usize> {
+        let max_len = Ops::max_operation_len_at(address, self.blocks().unwrap())?;
+        let len = cmp::min(max_len, buff.len());
+
+        Ok(Ops::write(
+            address,
+            &buff[..len],
+            self.volume.as_mut().unwrap(),
+        ))
     }
 
     /// Mengalokasikan sebuah blok dengan ukuran yang diberikan.

@@ -37,4 +37,10 @@ impl Ops {
             .and_then(|_| vol.read(buff))
             .expect("reading bytes from volume")
     }
+
+    pub fn write(address: u64, buff: &[u8], vol: &mut File) -> usize {
+        vol.seek(SeekFrom::Start(address))
+            .and_then(|_| vol.write(buff))
+            .expect("writing bytes to volume")
+    }
 }

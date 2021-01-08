@@ -131,3 +131,66 @@ fn read_truncated() {
         buff[..32] == [1u8; 32] && buff[32..] == [0u8; 32]
     })
 }
+
+/**
+ * Karena operasi write kebanyakan mirip dengan yang ada pada
+ * operasi read, maka test yang dibuat tidak terlalu mendetail.
+ */
+
+#[test]
+#[serial]
+fn write_block_bytes() {
+    let mut s = init_storage();
+    let text = "some text here";
+    let address = s.alloc(64).unwrap();
+
+    assert!({
+        let res = s.write(address, &text.as_bytes());
+
+        matches!(res, Ok(n) if n == text.len())
+    });
+
+    assert!({
+        let mut buff = vec![0u8; text.len()];
+        s.read(address, &mut buff).unwrap();
+
+        &buff == &text.as_bytes()
+    });
+}
+
+#[test]
+#[serial]
+fn write_at_illegal_address() {
+    assert!({
+        let mut s = init_storage();
+        let text = "some random text";
+
+        // alamat acak
+        let res = s.write(234653, &text.as_bytes());
+
+        matches!(res, Err(ErrorKind::BlockNotFound))
+    });
+}
+
+#[test]
+#[serial]
+fn write_truncated() {
+    let mut s = init_storage();
+    let text = "truncated string";
+
+    let si = text.find(' ').unwrap();
+    let address = s.alloc(si).unwrap();
+
+    assert!({
+        let res = s.write(address, &text.as_bytes());
+
+        matches!(res, Ok(n) if n == si)
+    });
+
+    assert!({
+        let mut buff = vec![0u8; si];
+        s.read(address, &mut buff).unwrap();
+
+        buff == &text.as_bytes()[..si]
+    });
+}
