@@ -3,6 +3,7 @@ name = "neondb"
 version = "0.1.0"
 authors = ["snaztoz <hafidhmn@gmail.com>"]
 edition = "2018"
+license = "MIT"
 
 [workspace]
 members = ["storage"]
