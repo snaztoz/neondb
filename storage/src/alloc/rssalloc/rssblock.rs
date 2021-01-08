@@ -11,7 +11,7 @@ impl RSSBlock {
     //
     // 8 byte untuk panjang blok, dan
     // 8 byte sisanya untuk alamat blok selanjutnya
-    pub const BLOCK_META_SIZE: u64 = 16;
+    pub const META_SIZE: u64 = 16;
 
     pub fn construct_meta(&self, next_block_address: u64) -> Vec<u8> {
         self.size

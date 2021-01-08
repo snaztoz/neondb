@@ -144,7 +144,7 @@ impl Allocator for RSSAllocator {
         }
 
         let size: u64 = size.try_into().unwrap();
-        let real_size = size + RSSBlock::BLOCK_META_SIZE;
+        let real_size = size + RSSBlock::META_SIZE;
 
         let i = self
             .find_unused_block_index(real_size)
@@ -163,7 +163,7 @@ impl Allocator for RSSAllocator {
         self.mark_block_before(i, vol);
         self.mark_block(i, vol);
 
-        let abstract_address = address + RSSBlock::BLOCK_META_SIZE;
+        let abstract_address = address + RSSBlock::META_SIZE;
         Ok(abstract_address)
     }
 
@@ -174,7 +174,7 @@ impl Allocator for RSSAllocator {
             return Err(ErrorKind::AllocatorNotInitialized);
         }
 
-        let real_address = address - RSSBlock::BLOCK_META_SIZE;
+        let real_address = address - RSSBlock::META_SIZE;
 
         let i = self
             .find_used_block_index(real_address)
@@ -210,8 +210,8 @@ impl Allocator for RSSAllocator {
             .filter(|b| b.is_used)
             .map(|b| Block {
                 // abstraksi
-                address: b.address + RSSBlock::BLOCK_META_SIZE,
-                size: b.size - RSSBlock::BLOCK_META_SIZE,
+                address: b.address + RSSBlock::META_SIZE,
+                size: b.size - RSSBlock::META_SIZE,
             })
             .collect::<Vec<Block>>()
     }

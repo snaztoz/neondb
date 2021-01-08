@@ -8,7 +8,7 @@ pub fn obtain_head(vol: &mut File, allocator: &mut RSSAllocator) -> Result<u64> 
 
     let (size, next_address) = extract_values(&buff[..]);
 
-    if size != RSSBlock::BLOCK_META_SIZE {
+    if size != RSSBlock::META_SIZE {
         return Err(ErrorKind::VolumeCorrupted);
     }
 
@@ -22,7 +22,7 @@ pub fn new_volume(vol: &mut File, allocator: &mut RSSAllocator) -> Result<()> {
     // Menambahkan head
     push_block(
         NEONDB_FILE_ALLOCATABLE_START,
-        RSSBlock::BLOCK_META_SIZE,
+        RSSBlock::META_SIZE,
         allocator,
     );
     allocator.mark_block(0, vol);
