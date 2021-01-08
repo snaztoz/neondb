@@ -120,7 +120,12 @@ fn read_truncated() {
         write_ones(address_one, 64);
         write_ones(address_two, 64);
 
-        s.read(address_one + 32, &mut buff).unwrap();
+        let res = s.read(address_one + 32, &mut buff);
+
+        match res {
+            Ok(n) => assert!(n == 32),
+            Err(_) => panic!("reading failed"),
+        }
 
         // 1 sebanyak 32 kali, lalu 0 sebanyak 32 kali
         buff[..32] == [1u8; 32] && buff[32..] == [0u8; 32]
