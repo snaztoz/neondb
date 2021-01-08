@@ -37,16 +37,7 @@ fn read_block_bytes() {
     assert!({
         let res = s.read(address, &mut buff);
 
-        if res.is_err() {
-            panic!("error at reading volume head's bytes");
-        }
-
-        let n = res.unwrap();
-        if n != 16 {
-            panic!("bytes read length mismatch");
-        }
-
-        true
+        matches!(res, Ok(n) if n == 16)
     });
 
     write_ones(address, 16);
@@ -55,7 +46,7 @@ fn read_block_bytes() {
         let res = s.read(address, &mut buff);
 
         if res.is_err() {
-            panic!("error at reading volume head's bytes");
+            panic!("error at reading bytes");
         }
 
         buff == [1u8; 16]
@@ -100,9 +91,8 @@ fn read_truncated() {
         // membaca mulai dari posisi tengah blok
         let res = s.read(address + 32, &mut buff);
 
-        match res {
-            Ok(n) => assert!(n == 32),
-            Err(_) => panic!("reading failed"),
+        if !matches!(res, Ok(n) if n == 32) {
+            panic!("reading failed")
         }
 
         // 1 sebanyak 32 kali, lalu 0 sebanyak 32 kali
@@ -122,9 +112,8 @@ fn read_truncated() {
 
         let res = s.read(address_one + 32, &mut buff);
 
-        match res {
-            Ok(n) => assert!(n == 32),
-            Err(_) => panic!("reading failed"),
+        if !matches!(res, Ok(n) if n == 32) {
+            panic!("reading failed")
         }
 
         // 1 sebanyak 32 kali, lalu 0 sebanyak 32 kali
