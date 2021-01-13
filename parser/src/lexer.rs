@@ -107,7 +107,7 @@ where
             // String
             Some('\'') | Some('"') => self.consume_str()?,
 
-            _ => todo!(),
+            _ => self.consume_symbols()?,
         };
         Ok(token)
     }
@@ -226,6 +226,91 @@ where
             }
         }
         Ok(Token::Str(s))
+    }
+
+    fn consume_symbols(&mut self) -> Result<Token, String> {
+        match self.ch0 {
+            Some('*') => {
+                self.advance().unwrap();
+                Ok(Token::Asterisk)
+            }
+
+            Some(',') => {
+                self.advance().unwrap();
+                Ok(Token::Comma)
+            }
+
+            Some('.') => {
+                self.advance().unwrap();
+                Ok(Token::Dot)
+            }
+
+            Some('=') => {
+                if self.ch1 == Some('=') {
+                    self.advance().unwrap();
+                }
+                self.advance().unwrap();
+                Ok(Token::Equal)
+            }
+
+            Some('>') => match self.ch1 {
+                Some('=') => {
+                    self.advance().unwrap();
+                    self.advance().unwrap();
+                    Ok(Token::GtEqual)
+                }
+                _ => {
+                    self.advance().unwrap();
+                    Ok(Token::Gt)
+                }
+            },
+
+            Some('<') => match self.ch1 {
+                Some('=') => {
+                    self.advance().unwrap();
+                    self.advance().unwrap();
+                    Ok(Token::LtEqual)
+                }
+                Some('>') => {
+                    self.advance().unwrap();
+                    self.advance().unwrap();
+                    Ok(Token::NotEqual)
+                }
+                _ => {
+                    self.advance().unwrap();
+                    Ok(Token::Lt)
+                }
+            },
+
+            Some('!') => match self.ch1 {
+                Some('=') => {
+                    self.advance().unwrap();
+                    self.advance().unwrap();
+                    Ok(Token::NotEqual)
+                }
+                _ => {
+                    self.advance().unwrap();
+                    Ok(Token::Exclamation)
+                }
+            },
+
+            Some('(') => {
+                self.advance().unwrap();
+                Ok(Token::ParenthL)
+            }
+
+            Some(')') => {
+                self.advance().unwrap();
+                Ok(Token::ParenthR)
+            }
+
+            Some(';') => {
+                self.advance().unwrap();
+                Ok(Token::Semicolon)
+            }
+
+            _ => Err(format!("unknown {} symbol", self.ch0.unwrap())),
+        }
     }
 
     // Helper untuk memastikan bilangan dengan basis selain desimal
