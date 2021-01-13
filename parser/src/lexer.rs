@@ -231,6 +231,7 @@ where
     // tidak mengandung floating-point maupun notasi saintifik.
     fn guard_radix_number(&self, radix: u32) -> Result<(), String> {
         debug_assert!(radix == 2 || radix == 8 || radix == 16);
+
         match self.ch0 {
             Some('.') => match self.ch1 {
                 Some('0'..='9') => Err(format!(
