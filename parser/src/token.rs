@@ -8,7 +8,10 @@ pub enum Token {
 
     // simbol dan operator
     Asterisk,
+    Comma,
+    Dot,
     Equal,
+    Exclamation,
     Gt,
     GtEqual,
     Lt,
@@ -16,6 +19,7 @@ pub enum Token {
     NotEqual,
     ParenthL,
     ParenthR,
+    Semicolon,
 
     // keyword
     And,
