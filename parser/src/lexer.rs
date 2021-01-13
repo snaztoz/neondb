@@ -80,6 +80,33 @@ where
                 _ => return Err(String::from("Identifier cannot be consisting of only _")),
             },
 
+            // Numerik.
+            //
+            // Untuk nilai float serta scientific notation hanya disupport
+            // oleh bilangan basis 10 (desimal).
+            Some('0') => match self.ch1 {
+                Some('b') => {
+                    self.advance();
+                    self.advance();
+                    self.consume_number_radix(2)?
+                }
+                Some('o') => {
+                    self.advance();
+                    self.advance();
+                    self.consume_number_radix(8)?
+                }
+                Some('x') => {
+                    self.advance();
+                    self.advance();
+                    self.consume_number_radix(16)?
+                }
+                _ => self.consume_number()?,
+            },
+            Some('1'..='9') => self.consume_number()?,
+
+            // String
+            Some('\'') | Some('"') => todo!(),
+
             _ => todo!(),
         };
         Ok(token)
@@ -100,6 +127,106 @@ where
             self.keywords[&identifier].clone()
         } else {
             Token::Name(identifier)
+        }
+    }
+
+    fn consume_number(&mut self) -> Result<Token, String> {
+        let mut number = String::new();
+        let mut dot_is_exist = false;
+        let mut exp_is_exist = false;
+        loop {
+            match self.ch0 {
+                Some('0'..='9') => number.push(self.advance().unwrap()),
+
+                Some('.') => match self.ch1 {
+                    Some('0'..='9') => {
+                        if dot_is_exist {
+                            break;
+                        }
+                        dot_is_exist = true;
+                        number.push(self.advance().unwrap());
+                    }
+                    _ => break,
+                },
+
+                Some('E') | Some('e') => match self.ch1 {
+                    Some('+') | Some('-') => {
+                        if exp_is_exist {
+                            break;
+                        }
+                        exp_is_exist = true;
+                        number.push(self.advance().unwrap());
+                        number.push(self.advance().unwrap());
+                    }
+                    _ => break,
+                },
+
+                _ => break,
+            }
+        }
+        if dot_is_exist {
+            Ok(Token::Float(number.parse().unwrap()))
+        } else {
+            Ok(Token::Int(number.parse().unwrap()))
+        }
+    }
+
+    fn consume_number_radix(&mut self, radix: u32) -> Result<Token, String> {
+        if radix == 10 {
+            return self.consume_number();
+        } else if radix != 2 && radix != 8 && radix != 16 {
+            panic!("unknown radix encountered");
+        }
+
+        let mut number = String::new();
+        loop {
+            self.guard_radix_number(radix)?;
+            match radix {
+                2 => match self.ch0 {
+                    Some('0'..='1') => number.push(self.advance().unwrap()),
+                    _ => break,
+                },
+
+                8 => match self.ch0 {
+                    Some('0'..='1') => number.push(self.advance().unwrap()),
+                    _ => break,
+                },
+
+                16 => match self.ch0 {
+                    Some('0'..='9') | Some('A'..='F') | Some('a'..='f') => {
+                        number.push(self.advance().unwrap())
+                    }
+                    _ => break,
+                },
+
+                _ => unreachable!(),
+            }
+        }
+        Ok(Token::Int(i64::from_str_radix(&number, radix).unwrap()))
+    }
+
+    // Helper untuk memastikan bilangan dengan basis selain desimal
+    // tidak mengandung floating-point maupun notasi saintifik.
+    fn guard_radix_number(&self, radix: u32) -> Result<(), String> {
+        debug_assert!(radix == 2 || radix == 8 || radix == 16);
+        match self.ch0 {
+            Some('.') => match self.ch1 {
+                Some('0'..='9') => Err(format!(
+                    "floating-point is not supported in base-{} number",
+                    radix
+                )),
+                _ => Ok(()),
+            },
+
+            Some('E') | Some('e') => match self.ch1 {
+                Some('+') | Some('-') => Err(format!(
+                    "scientific notation is not supported in base-{} number",
+                    radix
+                )),
+                _ => Ok(()),
+            },
+
+            _ => Ok(()),
         }
     }
 
