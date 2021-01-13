@@ -105,7 +105,7 @@ where
             Some('1'..='9') => self.consume_number()?,
 
             // String
-            Some('\'') | Some('"') => todo!(),
+            Some('\'') | Some('"') => self.consume_str()?,
 
             _ => todo!(),
         };
@@ -203,6 +203,28 @@ where
             }
         }
         Ok(Token::Int(i64::from_str_radix(&number, radix).unwrap()))
+    }
+
+    fn consume_str(&mut self) -> Result<Token, String> {
+        debug_assert!(self.ch0 == Some('\'') || self.ch0 == Some('"'));
+
+        let opening_quote = self.advance().unwrap();
+        let mut s = String::from(opening_quote);
+        loop {
+            match self.ch0 {
+                Some('\'') | Some('"') if self.ch0 == Some(opening_quote) => break,
+
+                Some('\\') if self.ch1 == Some(opening_quote) => {
+                    s.push(self.advance().unwrap());
+                    s.push(self.advance().unwrap());
+                }
+
+                None => return Err(String::from("missing closing quote")),
+
+                _ => s.push(self.advance().unwrap()),
+            }
+        }
+        Ok(Token::Str(s))
     }
 
     // Helper untuk memastikan bilangan dengan basis selain desimal
