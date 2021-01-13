@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub enum Token {
     // tipe dasar
     Float(f64),
