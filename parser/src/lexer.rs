@@ -123,8 +123,9 @@ where
             }
         }
 
-        if self.keywords.contains_key(&identifier) {
-            self.keywords[&identifier].clone()
+        let lower = identifier.to_ascii_lowercase();
+        if self.keywords.contains_key(&lower) {
+            self.keywords[&lower].clone()
         } else {
             Token::Name(identifier)
         }
