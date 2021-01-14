@@ -38,4 +38,18 @@ fn lex_query_with_number() {
                 Token::Semicolon,
             ]
     });
+
+    assert!({
+        let query = "123.5.123;";
+        let mut lexer = Lexer::new(query.chars());
+        let tokens = lexer.lex().unwrap();
+
+        tokens
+            == vec![
+                Token::Float(123.5),
+                Token::Dot,
+                Token::Int(123),
+                Token::Semicolon,
+            ]
+    });
 }
