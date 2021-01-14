@@ -131,6 +131,7 @@ where
         let mut number = String::new();
         let mut dot_is_exist = false;
         let mut exp_is_exist = false;
+        let mut exp = 0;
         loop {
             match self.ch0 {
                 Some('0'..='9') => number.push(self.advance().unwrap()),
@@ -152,8 +153,7 @@ where
                             break;
                         }
                         exp_is_exist = true;
-                        number.push(self.advance().unwrap());
-                        number.push(self.advance().unwrap());
+                        exp = self.consume_exp_value()?;
                     }
                     _ => break,
                 },
@@ -161,7 +161,7 @@ where
                 _ => break,
             }
         }
-        Ok(self.resolve_number_exp(&number, 0))
+        Ok(self.resolve_number_exp(&number, exp))
     }
 
     fn consume_number_radix(&mut self, radix: u32) -> Result<Token, String> {
@@ -304,6 +304,38 @@ where
 
             _ => Err(format!("unknown {} symbol", self.ch0.unwrap())),
         }
+    }
+
+    // Misal, terdapat angka 54e+03, maka angka tersebut dapat dituliskan
+    // sebagai 54 * 10^3. Method ini mengambil angka '3'-nya.
+    fn consume_exp_value(&mut self) -> Result<i32, String> {
+        let exp_sign = self.advance().unwrap();
+        if exp_sign != 'E' && exp_sign != 'e' {
+            panic!("expecting first character to be 'E' or 'e'");
+        }
+
+        let mut number = String::new();
+
+        match self.ch0 {
+            Some('+') | Some('-') => match self.ch1 {
+                // tidak boleh ada karakter whitespace yang memisahkan
+                Some('0'..='9') => {
+                    let sign = self.advance().unwrap();
+                    number.push(sign);
+                }
+
+                _ => return Err(String::from("invalid scientific notation format")),
+            },
+            _ => return Err(String::from("invalid scientific notation format")),
+        }
+
+        loop {
+            match self.ch0 {
+                Some('0'..='9') => number.push(self.advance().unwrap()),
+                _ => break,
+            }
+        }
+        Ok(number.parse().unwrap())
     }
 
     fn resolve_identifier(&self, identifier: &str) -> Token {
