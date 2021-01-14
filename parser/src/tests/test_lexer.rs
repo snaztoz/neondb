@@ -118,3 +118,27 @@ fn lex_query_with_str() {
         res.is_err()
     });
 }
+
+#[test]
+fn lex_query_symbols() {
+    assert!({
+        let query = "= == != <> (), .*;SELECT";
+        let mut lexer = Lexer::new(query.chars());
+        let tokens = lexer.lex().unwrap();
+
+        tokens
+            == vec![
+                Token::Equal,
+                Token::Equal,
+                Token::NotEqual,
+                Token::NotEqual,
+                Token::ParenthL,
+                Token::ParenthR,
+                Token::Comma,
+                Token::Dot,
+                Token::Asterisk,
+                Token::Semicolon,
+                Token::Select,
+            ]
+    });
+}
