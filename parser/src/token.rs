@@ -35,4 +35,5 @@ pub enum Token {
     Table,
     TypeInt,
     TypeChar,
+    Where,
 }
