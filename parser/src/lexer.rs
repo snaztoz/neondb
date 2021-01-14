@@ -123,13 +123,7 @@ where
                 _ => break,
             }
         }
-
-        let lower = identifier.to_ascii_lowercase();
-        if self.keywords.contains_key(&lower) {
-            self.keywords[&lower].clone()
-        } else {
-            Token::Name(identifier)
-        }
+        self.resolve_identifier(&identifier)
     }
 
     fn consume_number(&mut self) -> Result<Token, String> {
@@ -314,6 +308,15 @@ where
             }
 
             _ => Err(format!("unknown {} symbol", self.ch0.unwrap())),
+        }
+    }
+
+    fn resolve_identifier(&self, identifier: &str) -> Token {
+        let lower = identifier.to_ascii_lowercase();
+        if self.keywords.contains_key(&lower) {
+            self.keywords[&lower].clone()
+        } else {
+            Token::Name(String::from(identifier))
         }
     }
 
