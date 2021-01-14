@@ -25,6 +25,7 @@ fn get_keywords() -> HashMap<String, Token> {
     keywords.insert(String::from("table"), Token::Table);
     keywords.insert(String::from("int"), Token::TypeInt);
     keywords.insert(String::from("char"), Token::TypeChar);
+    keywords.insert(String::from("where"), Token::Where);
 
     keywords
 }
@@ -209,11 +210,14 @@ where
     fn consume_str(&mut self) -> Result<Token, String> {
         debug_assert!(self.ch0 == Some('\'') || self.ch0 == Some('"'));
 
+        let mut s = String::new();
         let opening_quote = self.advance().unwrap();
-        let mut s = String::from(opening_quote);
         loop {
             match self.ch0 {
-                Some('\'') | Some('"') if self.ch0 == Some(opening_quote) => break,
+                Some(quote) if quote == opening_quote => {
+                    self.advance().unwrap();
+                    break;
+                }
 
                 Some('\\') if self.ch1 == Some(opening_quote) => {
                     s.push(self.advance().unwrap());

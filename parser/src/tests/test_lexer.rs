@@ -66,3 +66,25 @@ fn lex_query_with_number() {
             ]
     });
 }
+
+#[test]
+fn lex_query_with_str() {
+    assert!({
+        let query = "SELECT * FROM my_table WHERE x = 'halo';";
+        let mut lexer = Lexer::new(query.chars());
+        let tokens = lexer.lex().unwrap();
+
+        tokens
+            == vec![
+                Token::Select,
+                Token::Asterisk,
+                Token::From,
+                Token::Name(String::from("my_table")),
+                Token::Where,
+                Token::Name(String::from("x")),
+                Token::Equal,
+                Token::Str(String::from("halo")),
+                Token::Semicolon,
+            ]
+    });
+}
