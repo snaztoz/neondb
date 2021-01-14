@@ -130,7 +130,6 @@ where
     fn consume_number(&mut self) -> Result<Token, String> {
         let mut number = String::new();
         let mut dot_is_exist = false;
-        let mut exp_is_exist = false;
         let mut exp = 0;
         loop {
             match self.ch0 {
@@ -149,11 +148,8 @@ where
 
                 Some('E') | Some('e') => match self.ch1 {
                     Some('+') | Some('-') => {
-                        if exp_is_exist {
-                            break;
-                        }
-                        exp_is_exist = true;
                         exp = self.consume_exp_value()?;
+                        break;
                     }
                     _ => break,
                 },
