@@ -322,12 +322,14 @@ where
     fn guard_radix_number(&self, radix: u32) -> Result<(), String> {
         debug_assert!(radix == 2 || radix == 8 || radix == 16);
 
-        let err_msg = format!("floating-point is not supported in base-{} number", radix);
+        let float_err = format!("floating-point is not supported in base-{} number", radix);
         match self.ch0 {
             Some('.') => match self.ch1 {
-                Some('0'..='1') if radix == 2 => Err(err_msg),
-                Some('0'..='7') if radix == 8 => Err(err_msg),
-                Some('0'..='9') | Some('A'..='F') | Some('a'..='f') if radix == 16 => Err(err_msg),
+                Some('0'..='1') if radix == 2 => Err(float_err),
+                Some('0'..='7') if radix == 8 => Err(float_err),
+                Some('0'..='9') | Some('A'..='F') | Some('a'..='f') if radix == 16 => {
+                    Err(float_err)
+                }
                 _ => Ok(()),
             },
 
