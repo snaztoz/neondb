@@ -100,4 +100,12 @@ fn lex_query_with_str() {
                 Token::Semicolon,
             ]
     });
+
+    assert!({
+        let query = "SELECT 'str tanpa penutup\\'";
+        let mut lexer = Lexer::new(query.chars());
+        let res = lexer.lex();
+
+        res.is_err()
+    });
 }
