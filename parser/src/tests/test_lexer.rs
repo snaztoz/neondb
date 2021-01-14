@@ -87,4 +87,17 @@ fn lex_query_with_str() {
                 Token::Semicolon,
             ]
     });
+
+    assert!({
+        let query = "SELECT 'halo\\'setelah petik';";
+        let mut lexer = Lexer::new(query.chars());
+        let tokens = lexer.lex().unwrap();
+
+        tokens
+            == vec![
+                Token::Select,
+                Token::Str(String::from("halo'setelah petik")),
+                Token::Semicolon,
+            ]
+    });
 }

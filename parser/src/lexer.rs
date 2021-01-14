@@ -220,7 +220,7 @@ where
                 }
 
                 Some('\\') if self.ch1 == Some(opening_quote) => {
-                    s.push(self.advance().unwrap());
+                    self.advance().unwrap();
                     s.push(self.advance().unwrap());
                 }
 
