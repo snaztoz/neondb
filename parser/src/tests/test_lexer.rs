@@ -65,6 +65,14 @@ fn lex_query_with_number() {
                 Token::Semicolon,
             ]
     });
+
+    assert!({
+        let query = "0xFF.FF;";
+        let mut lexer = Lexer::new(query.chars());
+        let res = lexer.lex();
+
+        res.is_err()
+    });
 }
 
 #[test]
