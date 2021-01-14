@@ -189,7 +189,7 @@ where
                 },
 
                 8 => match self.ch0 {
-                    Some('0'..='1') => number.push(self.advance().unwrap()),
+                    Some('0'..='7') => number.push(self.advance().unwrap()),
                     _ => break,
                 },
 
