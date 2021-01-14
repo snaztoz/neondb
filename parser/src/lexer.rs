@@ -209,12 +209,12 @@ where
         loop {
             match self.ch0 {
                 Some(quote) if quote == opening_quote => {
-                    self.advance().unwrap();
+                    self.advance();
                     break;
                 }
 
                 Some('\\') if self.ch1 == Some(opening_quote) => {
-                    self.advance().unwrap();
+                    self.advance();
                     s.push(self.advance().unwrap());
                 }
 
@@ -229,81 +229,81 @@ where
     fn consume_symbols(&mut self) -> Result<Token, String> {
         match self.ch0 {
             Some('*') => {
-                self.advance().unwrap();
+                self.advance();
                 Ok(Token::Asterisk)
             }
 
             Some(',') => {
-                self.advance().unwrap();
+                self.advance();
                 Ok(Token::Comma)
             }
 
             Some('.') => {
-                self.advance().unwrap();
+                self.advance();
                 Ok(Token::Dot)
             }
 
             Some('=') => {
                 if self.ch1 == Some('=') {
-                    self.advance().unwrap();
+                    self.advance();
                 }
-                self.advance().unwrap();
+                self.advance();
                 Ok(Token::Equal)
             }
 
             Some('>') => match self.ch1 {
                 Some('=') => {
-                    self.advance().unwrap();
-                    self.advance().unwrap();
+                    self.advance();
+                    self.advance();
                     Ok(Token::GtEqual)
                 }
                 _ => {
-                    self.advance().unwrap();
+                    self.advance();
                     Ok(Token::Gt)
                 }
             },
 
             Some('<') => match self.ch1 {
                 Some('=') => {
-                    self.advance().unwrap();
-                    self.advance().unwrap();
+                    self.advance();
+                    self.advance();
                     Ok(Token::LtEqual)
                 }
                 Some('>') => {
-                    self.advance().unwrap();
-                    self.advance().unwrap();
+                    self.advance();
+                    self.advance();
                     Ok(Token::NotEqual)
                 }
                 _ => {
-                    self.advance().unwrap();
+                    self.advance();
                     Ok(Token::Lt)
                 }
             },
 
             Some('!') => match self.ch1 {
                 Some('=') => {
-                    self.advance().unwrap();
-                    self.advance().unwrap();
+                    self.advance();
+                    self.advance();
                     Ok(Token::NotEqual)
                 }
                 _ => {
-                    self.advance().unwrap();
+                    self.advance();
                     Ok(Token::Exclamation)
                 }
             },
 
             Some('(') => {
-                self.advance().unwrap();
+                self.advance();
                 Ok(Token::ParenthL)
             }
 
             Some(')') => {
-                self.advance().unwrap();
+                self.advance();
                 Ok(Token::ParenthR)
             }
 
             Some(';') => {
-                self.advance().unwrap();
+                self.advance();
                 Ok(Token::Semicolon)
             }
 
@@ -325,16 +325,18 @@ where
     fn guard_radix_number(&self, radix: u32) -> Result<(), String> {
         debug_assert!(radix == 2 || radix == 8 || radix == 16);
 
-        let float_err = format!("floating-point is not supported in base-{} number", radix);
         match self.ch0 {
-            Some('.') => match self.ch1 {
-                Some('0'..='1') if radix == 2 => Err(float_err),
-                Some('0'..='7') if radix == 8 => Err(float_err),
-                Some('0'..='9') | Some('A'..='F') | Some('a'..='f') if radix == 16 => {
-                    Err(float_err)
+            Some('.') => {
+                let float_err = format!("floating-point is not supported in base-{} number", radix);
+                match self.ch1 {
+                    Some('0'..='1') if radix == 2 => Err(float_err),
+                    Some('0'..='7') if radix == 8 => Err(float_err),
+                    Some('0'..='9') | Some('A'..='F') | Some('a'..='f') if radix == 16 => {
+                        Err(float_err)
+                    }
+                    _ => Ok(()),
                 }
-                _ => Ok(()),
-            },
+            }
 
             Some('E') | Some('e') => match self.ch1 {
                 Some('+') | Some('-') => Err(format!(
