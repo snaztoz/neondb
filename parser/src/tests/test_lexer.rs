@@ -52,4 +52,17 @@ fn lex_query_with_number() {
                 Token::Semicolon,
             ]
     });
+
+    assert!({
+        let query = "1230xFF;";
+        let mut lexer = Lexer::new(query.chars());
+        let tokens = lexer.lex().unwrap();
+
+        tokens
+            == vec![
+                Token::Int(1230),
+                Token::Name(String::from("xFF")),
+                Token::Semicolon,
+            ]
+    });
 }
