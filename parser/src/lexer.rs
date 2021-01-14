@@ -170,8 +170,6 @@ where
     fn consume_number_radix(&mut self, radix: u32) -> Result<Token, String> {
         if radix == 10 {
             return self.consume_number();
-        } else if radix != 2 && radix != 8 && radix != 16 {
-            panic!("unknown radix encountered");
         }
 
         let mut number = String::new();
@@ -323,7 +321,9 @@ where
     // Helper untuk memastikan bilangan dengan basis selain desimal
     // tidak mengandung floating-point maupun notasi saintifik.
     fn guard_radix_number(&self, radix: u32) -> Result<(), String> {
-        debug_assert!(radix == 2 || radix == 8 || radix == 16);
+        if radix != 2 && radix != 8 && radix != 16 {
+            panic!("unknown radix encountered");
+        }
 
         match self.ch0 {
             Some('.') => {
