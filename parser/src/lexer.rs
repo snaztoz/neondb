@@ -1,6 +1,7 @@
 use crate::token::Token;
 
 use std::collections::HashMap;
+use std::convert::TryInto;
 
 pub struct Lexer<T: Iterator<Item = char>> {
     query: T,
@@ -160,11 +161,7 @@ where
                 _ => break,
             }
         }
-        if dot_is_exist {
-            Ok(Token::Float(number.parse().unwrap()))
-        } else {
-            Ok(Token::Int(number.parse().unwrap()))
-        }
+        Ok(self.resolve_number_exp(&number, 0))
     }
 
     fn consume_number_radix(&mut self, radix: u32) -> Result<Token, String> {
@@ -315,6 +312,17 @@ where
             self.keywords[&lower].clone()
         } else {
             Token::Name(String::from(identifier))
+        }
+    }
+
+    fn resolve_number_exp(&self, number: &str, exp: i32) -> Token {
+        if number.contains('.') || exp.is_negative() {
+            let number = number.parse::<f64>().unwrap() * 10f64.powi(exp);
+            Token::Float(number)
+        } else {
+            let exp = exp.try_into().unwrap();
+            let number = number.parse::<i64>().unwrap() * 10i64.pow(exp);
+            Token::Int(number)
         }
     }
 
