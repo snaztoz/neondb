@@ -300,9 +300,7 @@ where
     // sebagai 54 * 10^3. Method ini mengambil angka '3'-nya.
     fn consume_exp_value(&mut self) -> Result<i32, String> {
         let exp_sign = self.advance().unwrap();
-        if exp_sign != 'E' && exp_sign != 'e' {
-            panic!("expecting first character to be 'E' or 'e'");
-        }
+        debug_assert!(exp_sign == 'E' || exp_sign == 'e');
 
         let mut number = String::new();
 
