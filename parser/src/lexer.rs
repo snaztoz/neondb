@@ -304,17 +304,11 @@ where
 
         let mut number = String::new();
 
-        match self.ch0 {
-            Some('+') | Some('-') => match self.ch1 {
-                // tidak boleh ada karakter whitespace yang memisahkan
-                Some('0'..='9') => {
-                    let sign = self.advance().unwrap();
-                    number.push(sign);
-                }
-
-                _ => return Err(String::from("invalid scientific notation format")),
-            },
-            _ => return Err(String::from("invalid scientific notation format")),
+        if matches!(self.ch0, Some('+') | Some('-')) && matches!(self.ch1, Some('0'..='9')) {
+            let sign = self.advance().unwrap();
+            number.push(sign);
+        } else {
+            return Err(String::from("invalid scientific notation format"));
         }
 
         loop {
