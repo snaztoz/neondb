@@ -17,6 +17,23 @@ fn lex_query() {
                 Token::Semicolon,
             ]
     });
+
+    // sama dengan sebelumnya, hanya saja ada whitespace
+    // di awal dan akhir string
+    assert!({
+        let query = "  \tSELECT * FROM my_table;\t  ";
+        let mut lexer = Lexer::new(query.chars());
+        let tokens = lexer.lex().unwrap();
+
+        tokens
+            == vec![
+                Token::Select,
+                Token::Asterisk,
+                Token::From,
+                Token::Name(String::from("my_table")),
+                Token::Semicolon,
+            ]
+    });
 }
 
 #[test]

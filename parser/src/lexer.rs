@@ -50,6 +50,7 @@ where
 
     pub fn lex(&mut self) -> Result<Vec<Token>, String> {
         let mut tokens = vec![];
+        self.adjust_to_next_token();
         while self.ch0 != None {
             tokens.push(self.consume_token()?);
             self.adjust_to_next_token();
