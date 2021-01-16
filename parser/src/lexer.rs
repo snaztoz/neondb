@@ -88,21 +88,9 @@ where
             // Untuk nilai float serta scientific notation hanya disupport
             // oleh bilangan basis 10 (desimal).
             Some('0') => match self.ch1 {
-                Some('b') => {
-                    self.advance();
-                    self.advance();
-                    self.consume_number_radix(2)?
-                }
-                Some('o') => {
-                    self.advance();
-                    self.advance();
-                    self.consume_number_radix(8)?
-                }
-                Some('x') => {
-                    self.advance();
-                    self.advance();
-                    self.consume_number_radix(16)?
-                }
+                Some('b') => self.consume_number_radix(2)?,
+                Some('o') => self.consume_number_radix(8)?,
+                Some('x') => self.consume_number_radix(16)?,
                 _ => self.consume_number()?,
             },
             Some('1'..='9') => self.consume_number()?,
@@ -164,7 +152,12 @@ where
     fn consume_number_radix(&mut self, radix: u32) -> Result<Token, String> {
         if radix == 10 {
             return self.consume_number();
+        } else if radix != 2 && radix != 8 && radix != 16 {
+            panic!("unknown radix encountered");
         }
+
+        self.advance(); // karakter '0'
+        self.advance(); // karakter 'b' | 'o' | 'x'
 
         let mut number = String::new();
         loop {
@@ -358,10 +351,6 @@ where
     // Helper untuk memastikan bilangan dengan basis selain desimal
     // tidak mengandung floating-point maupun notasi saintifik.
     fn guard_radix_number(&self, radix: u32) -> Result<(), String> {
-        if radix != 2 && radix != 8 && radix != 16 {
-            panic!("unknown radix encountered");
-        }
-
         match self.ch0 {
             Some('.') => {
                 let float_err = format!("floating-point is not supported in base-{} number", radix);
