@@ -186,6 +186,30 @@ where
         Ok(Token::Int(i64::from_str_radix(&number, radix).unwrap()))
     }
 
+    // Misal, terdapat angka 54e+03, maka angka tersebut dapat dituliskan
+    // sebagai 54 * 10^3. Method ini mengambil angka '3'-nya.
+    fn consume_exp_value(&mut self) -> Result<i32, String> {
+        let exp_sign = self.advance().unwrap();
+        debug_assert!(exp_sign == 'E' || exp_sign == 'e');
+
+        let mut number = String::new();
+
+        if matches!(self.ch0, Some('+') | Some('-')) && matches!(self.ch1, Some('0'..='9')) {
+            let sign = self.advance().unwrap();
+            number.push(sign);
+        } else {
+            return Err(String::from("invalid scientific notation format"));
+        }
+
+        loop {
+            match self.ch0 {
+                Some('0'..='9') => number.push(self.advance().unwrap()),
+                _ => break,
+            }
+        }
+        Ok(number.parse().unwrap())
+    }
+
     fn consume_str(&mut self) -> Result<Token, String> {
         debug_assert!(self.ch0 == Some('\'') || self.ch0 == Some('"'));
 
@@ -294,30 +318,6 @@ where
 
             _ => Err(format!("unknown {} symbol", self.ch0.unwrap())),
         }
-    }
-
-    // Misal, terdapat angka 54e+03, maka angka tersebut dapat dituliskan
-    // sebagai 54 * 10^3. Method ini mengambil angka '3'-nya.
-    fn consume_exp_value(&mut self) -> Result<i32, String> {
-        let exp_sign = self.advance().unwrap();
-        debug_assert!(exp_sign == 'E' || exp_sign == 'e');
-
-        let mut number = String::new();
-
-        if matches!(self.ch0, Some('+') | Some('-')) && matches!(self.ch1, Some('0'..='9')) {
-            let sign = self.advance().unwrap();
-            number.push(sign);
-        } else {
-            return Err(String::from("invalid scientific notation format"));
-        }
-
-        loop {
-            match self.ch0 {
-                Some('0'..='9') => number.push(self.advance().unwrap()),
-                _ => break,
-            }
-        }
-        Ok(number.parse().unwrap())
     }
 
     fn resolve_identifier(&self, identifier: &str) -> Token {
